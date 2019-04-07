@@ -2,18 +2,29 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI; // Required when Using UI elements.
+
 
 //Scene transition numbers will be finalised later. It's hard coded for convenience. 
 // Can see scene numbers in File > build settings
 public class Menu : MonoBehaviour
 {
+
+    public InputField Input_1;
+
     public void PlayTraining()
     {
-        SceneManager.LoadScene("Training");
+        if (ValidateName())
+        {
+            SceneManager.LoadScene("Training");
+        }
     }
     public void PlayScored()
     {
-        SceneManager.LoadScene("Scored");
+        if (ValidateName())
+        {
+            SceneManager.LoadScene("Scored");
+        }
     }
     public void Settings()
     {
@@ -27,5 +38,15 @@ public class Menu : MonoBehaviour
     public void EndScreen()
     {
         SceneManager.LoadScene("End");
+    }
+
+    private bool ValidateName()
+    {
+        string nameError = Player.ValidateName(Input_1.text);
+        if(nameError != null)
+        {
+            return false;
+        }
+        return true;
     }
 }
