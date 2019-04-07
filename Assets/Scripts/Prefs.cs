@@ -6,12 +6,12 @@ public static class Prefs
 {
     private const string KEY_PLAYER_NAME = "KEY_PLAYER_NAME";
 
-    static void SetPlayerName(string name)
+    public static void SetPlayerName(string name)
     {
         PlayerPrefs.SetString(KEY_PLAYER_NAME, name);
     }
 
-    static string GetPlayerName()
+    public static string GetPlayerName()
     {
         return PlayerPrefs.GetString(KEY_PLAYER_NAME);
     }

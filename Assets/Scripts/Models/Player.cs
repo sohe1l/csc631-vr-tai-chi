@@ -18,6 +18,25 @@ public class Player
     }
 
 
+    public static Player GetOrCreatePlayer(string name)
+    {
+        var db = DataService.Instance.GetConnection();
+
+        var query = db.Table<Player>()
+            .Where(v => v.Name.Equals(name));
+
+        if(query.Count() == 0)
+        {
+            var player = new Player
+            {
+                Name = name
+            };
+
+            db.Insert(player);
+            return player;
+        }
+        return query.First();
+    }
 
 
     // Validations
@@ -28,4 +47,5 @@ public class Player
         if (name.Length > 10) return "Name should not be at more than 10 characters";
         return null;
     }
+
 }

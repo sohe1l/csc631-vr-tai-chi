@@ -9,32 +9,37 @@ using UnityEngine.UI; // Required when Using UI elements.
 // Can see scene numbers in File > build settings
 public class Menu : MonoBehaviour
 {
-
     public InputField Input_1;
 
     public void PlayTraining()
     {
         if (ValidateName())
         {
+            Prefs.SetPlayerName(Input_1.text);
             SceneManager.LoadScene("Training");
         }
     }
+
     public void PlayScored()
     {
         if (ValidateName())
         {
+            Prefs.SetPlayerName(Input_1.text);
             SceneManager.LoadScene("Scored");
         }
     }
+
     public void Settings()
     {
         SceneManager.LoadScene("Settings");
     }
+
     public void Home()
     {
         SceneManager.LoadScene("Menu");
 
     }
+
     public void EndScreen()
     {
         SceneManager.LoadScene("End");
