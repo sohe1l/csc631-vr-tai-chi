@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class ScoredVC : MonoBehaviour
 {
@@ -45,11 +46,22 @@ public class ScoredVC : MonoBehaviour
             Text levelName = LevelRow.transform.Find("LevelName").GetComponent<Text>();
             levelName.text = level.Name;
 
+            Button StartBtn = LevelRow.transform.Find("StartBtn").GetComponent<Button>();
+            StartBtn.onClick.AddListener(() => LoadLevel(level.Id));
+
             LevelRow.transform.SetParent(ScrollViewContent.transform, false);
             LevelRow.transform.Translate(Vector3.down * LEVEL_ROW_OFFSET * counter);
             counter++;
         }
 
     }
+
+    private void LoadLevel(int id)
+    {
+        Prefs.SetLevelID(id);
+        SceneManager.LoadScene("Game");
+    }
+
+
 
 }
