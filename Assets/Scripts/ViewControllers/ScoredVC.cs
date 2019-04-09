@@ -20,7 +20,7 @@ public class ScoredVC : MonoBehaviour
         inputName.text = playerName;
         Player player = Player.GetOrCreatePlayer(playerName);
 
-        loadLevels();
+        LoadLevels();
 
     }
 
@@ -31,7 +31,7 @@ public class ScoredVC : MonoBehaviour
     }
 
 
-    private void loadLevels()
+    private void LoadLevels()
     {
         var db = DataService.Instance.GetConnection();
 
