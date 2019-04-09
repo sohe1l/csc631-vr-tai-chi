@@ -54,4 +54,10 @@ public class Menu : MonoBehaviour
         }
         return true;
     }
+
+
+    public void PoseRecorderScreen()
+    {
+        SceneManager.LoadScene("PoseRecorder");
+    }
 }
