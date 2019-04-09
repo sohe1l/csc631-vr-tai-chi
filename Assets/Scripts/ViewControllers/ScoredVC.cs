@@ -7,6 +7,10 @@ public class ScoredVC : MonoBehaviour
 {
 
     public Text inputName;
+    public GameObject ScrollViewContent;
+    public GameObject LevelRowPrefab;
+
+    private const int LEVEL_ROW_OFFSET = 35;
 
         // Start is called before the first frame update
     void Start()
@@ -14,6 +18,9 @@ public class ScoredVC : MonoBehaviour
         string playerName = Prefs.GetPlayerName();
         inputName.text = playerName;
         Player player = Player.GetOrCreatePlayer(playerName);
+
+        loadLevels();
+
     }
 
     // Update is called once per frame
@@ -21,4 +28,28 @@ public class ScoredVC : MonoBehaviour
     {
         
     }
+
+
+    private void loadLevels()
+    {
+        var db = DataService.Instance.GetConnection();
+
+        var query = db.Table<Level>()
+            .Where(v => v.Mode.Equals(Level.MODE_SCORED));
+
+        int counter = 0;
+        foreach (Level level in query)
+        {
+            GameObject LevelRow = Instantiate(LevelRowPrefab);
+
+            Text levelName = LevelRow.transform.Find("LevelName").GetComponent<Text>();
+            levelName.text = level.Name;
+
+            LevelRow.transform.SetParent(ScrollViewContent.transform, false);
+            LevelRow.transform.Translate(Vector3.down * LEVEL_ROW_OFFSET * counter);
+            counter++;
+        }
+
+    }
+
 }
