@@ -16,6 +16,7 @@ public class ScoredVC : MonoBehaviour
         // Start is called before the first frame update
     void Start()
     {
+
         string playerName = Prefs.GetPlayerName();
         inputName.text = playerName;
         Player player = Player.GetOrCreatePlayer(playerName);
