@@ -250,7 +250,7 @@ public class PoseRecorderVC : MonoBehaviour
 
     public void Exit()
     {
-        SceneManager.LoadScene("PoseRecorder");
+        SceneManager.LoadScene("PoseRecorderMenu");
     }
 }
 
