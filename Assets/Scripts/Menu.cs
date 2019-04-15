@@ -11,6 +11,7 @@ public class Menu : MonoBehaviour
 {
     public InputField Input_1;
 
+ 
     public void PlayTraining()
     {
         if (ValidateName())
