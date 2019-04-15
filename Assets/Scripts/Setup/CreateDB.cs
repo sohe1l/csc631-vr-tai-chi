@@ -22,8 +22,8 @@ public class CreateDB : MonoBehaviour
         conn.DropTable<TimePoint>();
         conn.CreateTable<TimePoint>();
 
-        conn.DropTable<Score>();
-        conn.CreateTable<Score>();
+        conn.DropTable<Leaderboard>();
+        conn.CreateTable<Leaderboard>();
 
         TimePoint.TestAdd(conn);
 
