@@ -7,17 +7,12 @@ using Valve.VR;
 
 public class PoseRecorderVC : MonoBehaviour
 {
-
-
-
-    bool started = false;
     bool ended = false;
-    bool started_validation = false;
+    bool started = false;
 
-    DateTime start_time = DateTime.Now;
-    TimeSpan time;
-    public Dictionary<int, double[]> dict = new Dictionary<int, double[]>();
-    public Dictionary<int, double[]> dictV = new Dictionary<int, double[]>();
+    private Recorder HeadRecorder;
+    private Recorder LeftRecorder;
+    private Recorder RightRecorder;
 
     int last_elapsed = -1;
     int count = 0;
@@ -31,93 +26,31 @@ public class PoseRecorderVC : MonoBehaviour
         // Activate VR
         //StartCoroutine(SetVRDevice("OpenVR", true));
 
+        int poseId = Prefs.GetPoseID();
+
+        HeadRecorder = new Recorder(poseId, XRNode.Head, TimePoint.TYPE_HEAD);
+        LeftRecorder = new Recorder(poseId, XRNode.LeftHand, TimePoint.TYPE_HAND_LEFT);
+        RightRecorder = new Recorder(poseId, XRNode.RightHand, TimePoint.TYPE_HAND_RIGHT);
     }
 
     void Update()
     {
-            
+        //SteamVR_Action_Pose pose = SteamVR_Input.GetPose
         if (SteamVR_Input.GetBooleanAction("GrabPinch").state)
         {
-            Vector3 right = InputTracking.GetLocalPosition(XRNode.RightHand);
-            Vector3 left = InputTracking.GetLocalPosition(XRNode.LeftHand);
-            Vector3 head = InputTracking.GetLocalPosition(XRNode.Head);
-
-
             // player holding trigger for the first time
             if (!ended)
             {
-                if (!started)
-                {
-                    start_time = DateTime.Now;
-                    started = true;
-                }
-                time = DateTime.Now - start_time;
-                int elapsed = (int)(Math.Round(time.Seconds + time.Milliseconds / 1000.0, 1) * 10);
-                if (last_elapsed != elapsed && count != 0)
-                {
-                    dict.Add(elapsed, new double[] { x_sum / count, y_sum / count, z_sum / count });
-
-                    if(dict.Count != 0)
-                    {
-
-                        double[] start = dict[elapsed - 1];
-                        DrawLine(new Vector3((float)start[0], (float)start[1], (float)start[2]), new Vector3((float)x_sum / count, (float)y_sum / count, (float)z_sum / count), Color.blue);
-                    }
-
-
-                    count = 0;
-                    x_sum = 0;
-                    y_sum = 0;
-                    z_sum = 0;
-                    last_elapsed = elapsed;
-                }
-                Debug.Log(elapsed);
-                count++;
-                double x = right.x;
-                double y = right.y;
-                double z = right.z;
-                x_sum += x;
-                y_sum += y;
-                z_sum += z;
-                //SteamVR_Action_Pose pose = SteamVR_Input.GetPose
-                Debug.Log(right);
+                HeadRecorder.Record();
+                LeftRecorder.Record();
+                RightRecorder.Record();
             }
             // player holding trigger for the second time - validation
             if (ended)
             {
-                if (!started_validation)
-                {
-                    start_time = DateTime.Now;
-                    started_validation = true;
-                }
-                time = DateTime.Now - start_time;
-                int elapsed = (int)(Math.Round(time.Seconds + time.Milliseconds / 1000.0, 1) * 10);
-                if (last_elapsed != elapsed && count != 0)
-                {
-                    dictV.Add(elapsed, new double[] { x_sum / count, y_sum / count, z_sum / count });
-                    count = 0;
-                    x_sum = 0;
-                    y_sum = 0;
-                    z_sum = 0;
-                    last_elapsed = elapsed;
-                    double off = Math.Sqrt(
-                        (Math.Pow(dict[elapsed][0] - dictV[elapsed][0], 2)
-                        + Math.Pow(dict[elapsed][1] - dictV[elapsed][1], 2)
-                        + Math.Pow(dict[elapsed][2] - dictV[elapsed][2], 2))
-                        );
-                    Debug.Log("Result " + elapsed + "  " + off);
-                }
-                //Debug.Log(elapsed);
-                count++;
-                
-                
-                double x = right.x;
-                double y = right.y;
-                double z = right.z;
-                x_sum += x;
-                y_sum += y;
-                z_sum += z;
-
+                HeadRecorder.RecordValidate();
+                LeftRecorder.RecordValidate();
+                RightRecorder.RecordValidate();
             }
         }
         else
@@ -125,11 +58,9 @@ public class PoseRecorderVC : MonoBehaviour
             if (!ended && started)
             {
                 ended = true;
-                //Debug.Log("else");
-                foreach (KeyValuePair<int, double[]> kvp in dict)
-                {
-                    Debug.Log(("{0}: {1},{2},{3}", kvp.Key, kvp.Value[0], kvp.Value[1], kvp.Value[2]));
-                }
+                HeadRecorder.Score();
+                LeftRecorder.Score();
+                RightRecorder.Score();
             }
         }
     }
@@ -143,8 +74,7 @@ public class PoseRecorderVC : MonoBehaviour
     }
 
 
-
-    void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 0.2f)
+    static void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 0.2f)
     {
         GameObject myLine = new GameObject();
         myLine.transform.position = start;
@@ -162,6 +92,126 @@ public class PoseRecorderVC : MonoBehaviour
         //GameObject.Destroy(myLine, duration);
     }
 
+    private class Recorder
+    {
+        #region vars
+        private DateTime start_time;
+        private TimeSpan time;
+        private int last_elapsed = -1;
+        private  int count = 0;
+        double x_sum = 0, y_sum = 0, z_sum = 0;
+        private bool started = false;
+        bool started_validation = false;
+        XRNode Node;
+        int poseId;
+        int poseType;
+        public Dictionary<int, double[]> record_points = new Dictionary<int, double[]>();
+        public Dictionary<int, double[]> validate_points = new Dictionary<int, double[]>();
+        #endregion  
+
+        public Recorder(int poseId, XRNode Node, int poseType)
+        {
+            this.Node = Node;
+            this.poseId = poseId;
+            this.poseType = poseType;
+        }
+
+        public void Record()
+        {
+            if (!started)
+            {
+                start_time = DateTime.Now;
+                started = true;
+            }
+
+            time = DateTime.Now - start_time;
+            int elapsed = (int)(Math.Round(time.Seconds + time.Milliseconds / 1000.0, 1) * 10);
+            if (last_elapsed != elapsed && count != 0)
+            {
+                record_points.Add(elapsed, new double[] { x_sum / count, y_sum / count, z_sum / count });
+                
+                if (record_points.Count != 0)
+                {
+                    double[] start = record_points[elapsed - 1];
+                    DrawLine(new Vector3((float)start[0], (float)start[1], (float)start[2]), 
+                            new Vector3((float)x_sum / count, (float)y_sum / count, (float)z_sum / count), Color.blue);
+                }
+                count = 0;
+                x_sum = y_sum = z_sum = 0;
+                last_elapsed = elapsed;
+            }
+
+            Vector3 input = InputTracking.GetLocalPosition(Node);
+            x_sum += input.x;
+            y_sum += input.y;
+            z_sum += input.z;
+            count++;
+        }
+
+        public void RecordValidate()
+        {
+            if (!started_validation)
+            {
+                start_time = DateTime.Now;
+                started_validation = true;
+            }
+            time = DateTime.Now - start_time;
+            int elapsed = (int)(Math.Round(time.Seconds + time.Milliseconds / 1000.0, 1) * 10);
+            if (last_elapsed != elapsed && count != 0)
+            {
+                validate_points.Add(elapsed, new double[] { x_sum / count, y_sum / count, z_sum / count });
+                count = 0;
+                x_sum = y_sum = z_sum = 0;
+                last_elapsed = elapsed;
+            }
+            //Debug.Log(elapsed);
+            Vector3 input = InputTracking.GetLocalPosition(Node);
+            x_sum += input.x;
+            y_sum += input.y;
+            z_sum += input.z;
+            count++;
+        }
+
+        public double Score()
+        {
+            double total_diff = 0;
+            for(int i = 0; i < record_points.Count; i++)
+            {
+                try
+                {
+                    double off = Math.Sqrt(
+                        (Math.Pow(validate_points[i][0] - record_points[i][0], 2)
+                        + Math.Pow(validate_points[i][1] - record_points[i][1], 2)
+                        + Math.Pow(validate_points[i][2] - record_points[i][2], 2))
+                        );
+                    total_diff += off;
+                }
+                catch{}
+            }
+            Debug.Log("Total difference " + total_diff);
+            return total_diff;
+        }
+
+        public void Save()
+        {
+            var db = DataService.Instance.GetConnection();
+
+            foreach (var tp in record_points)
+            {
+                var timePoint = new TimePoint()
+                {
+                    PoseID = poseId,
+                    Type = poseType,
+                    X = tp.Value[0],
+                    Y = tp.Value[1],
+                    Z = tp.Value[2],
+                    Time = tp.Key
+                };
+
+                db.Insert(tp);
+            }
+        }
+    }
 }
 
 
