@@ -4,9 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 using Valve.VR;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PoseRecorderVC : MonoBehaviour
 {
+    public Text StatusLabel;
+    public Text PoseLabel;
     bool ended = false;
     bool started = false;
 
@@ -20,13 +24,26 @@ public class PoseRecorderVC : MonoBehaviour
     const string TRIGGER = "joystick button 14";
 
 
+
     // Start is called before the first frame update
     void Start()
     {
         // Activate VR
         //StartCoroutine(SetVRDevice("OpenVR", true));
-
+        StatusLabel.text = "Hold the trigger to start recording";
         int poseId = Prefs.GetPoseID();
+
+        // Load pose name
+        var db = DataService.Instance.GetConnection();
+        var query = db.Table<Pose>()
+            .Where(v => v.Id.Equals(poseId));
+
+        if (query.Count() == 0)
+        {
+            StatusLabel.text = "Error! Invalid pose ID.";
+        }
+        Pose pose = query.First();
+        PoseLabel.text = pose.Name;
 
         HeadRecorder = new Recorder(poseId, XRNode.Head, TimePoint.TYPE_HEAD);
         LeftRecorder = new Recorder(poseId, XRNode.LeftHand, TimePoint.TYPE_HAND_LEFT);
@@ -35,34 +52,44 @@ public class PoseRecorderVC : MonoBehaviour
 
     void Update()
     {
-        //SteamVR_Action_Pose pose = SteamVR_Input.GetPose
-        if (SteamVR_Input.GetBooleanAction("GrabPinch").state)
+        try
         {
-            // player holding trigger for the first time
-            if (!ended)
+            //SteamVR_Action_Pose pose = SteamVR_Input.GetPose
+            if (SteamVR_Input.GetBooleanAction("GrabPinch").state)
             {
-                HeadRecorder.Record();
-                LeftRecorder.Record();
-                RightRecorder.Record();
+                // player holding trigger for the first time
+                if (!ended)
+                {
+                    StatusLabel.text = "Recording data points";
+                    HeadRecorder.Record();
+                    LeftRecorder.Record();
+                    RightRecorder.Record();
+                }
+                // player holding trigger for the second time - validation
+                if (ended)
+                {
+                    StatusLabel.text = "Recording data points for validation";
+                    HeadRecorder.RecordValidate();
+                    LeftRecorder.RecordValidate();
+                    RightRecorder.RecordValidate();
+                }
             }
-            // player holding trigger for the second time - validation
-            if (ended)
+            else
             {
-                HeadRecorder.RecordValidate();
-                LeftRecorder.RecordValidate();
-                RightRecorder.RecordValidate();
+                if (!ended && started)
+                {
+                    ended = true;
+                    HeadRecorder.Score();
+                    LeftRecorder.Score();
+                    RightRecorder.Score();
+                }
             }
         }
-        else
+        catch
         {
-            if (!ended && started)
-            {
-                ended = true;
-                HeadRecorder.Score();
-                LeftRecorder.Score();
-                RightRecorder.Score();
-            }
+            StatusLabel.text = "Error occured while getting input from device";
         }
+
     }
 
 
@@ -212,6 +239,19 @@ public class PoseRecorderVC : MonoBehaviour
             }
         }
     }
+
+    public void SaveExit()
+    {
+        HeadRecorder.Save();
+        LeftRecorder.Save();
+        RightRecorder.Save();
+        Exit();
+    }
+
+    public void Exit()
+    {
+        SceneManager.LoadScene("PoseRecorder");
+    }
 }
 
 
@@ -224,24 +264,24 @@ public class PoseRecorderVC : MonoBehaviour
 
 
 
-        //Debug.Log(InputTracking.GetLocalPosition(XRNode.Head));
-        //Debug.Log(InputTracking.GetLocalRotation(XRNode.Head));
+//Debug.Log(InputTracking.GetLocalPosition(XRNode.Head));
+//Debug.Log(InputTracking.GetLocalRotation(XRNode.Head));
 
-        //Debug.Log(InputTracking.GetLocalPosition(XRNode.RightHand));
-        //Debug.Log(InputTracking.GetLocalRotation(XRNode.RightHand));
+//Debug.Log(InputTracking.GetLocalPosition(XRNode.RightHand));
+//Debug.Log(InputTracking.GetLocalRotation(XRNode.RightHand));
 
 
 
-        //// vibrate device
-        //InputDevice device = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-        //HapticCapabilities capabilities;
-        //if (device.TryGetHapticCapabilities(out capabilities))
-        //{
-        //    if (capabilities.supportsImpulse)
-        //    {
-        //        uint channel = 0;
-        //        float amplitude = 0.5f;
-        //        float duration = 1.0f;
-        //        device.SendHapticImpulse(channel, amplitude, duration);
-        //    }
-        //}
+//// vibrate device
+//InputDevice device = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+//HapticCapabilities capabilities;
+//if (device.TryGetHapticCapabilities(out capabilities))
+//{
+//    if (capabilities.supportsImpulse)
+//    {
+//        uint channel = 0;
+//        float amplitude = 0.5f;
+//        float duration = 1.0f;
+//        device.SendHapticImpulse(channel, amplitude, duration);
+//    }
+//}
