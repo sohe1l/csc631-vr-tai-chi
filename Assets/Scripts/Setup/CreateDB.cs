@@ -22,6 +22,9 @@ public class CreateDB : MonoBehaviour
         conn.DropTable<TimePoint>();
         conn.CreateTable<TimePoint>();
 
+        conn.DropTable<Leaderboard>();
+        conn.CreateTable<Leaderboard>();
+
         TimePoint.TestAdd(conn);
 
         TimePoint.GetPosePoints(conn, 1, TimePoint.TYPE_FOOT_LEFT);
