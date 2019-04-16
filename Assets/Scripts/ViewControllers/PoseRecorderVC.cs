@@ -9,14 +9,28 @@ using UnityEngine.SceneManagement;
 
 public class PoseRecorderVC : MonoBehaviour
 {
+    enum State
+    {
+        Not_Started,
+        Recording_Record,
+        Record_Done,
+        Recording_Validation,
+        Validation_Done
+    }
+
+    State state = State.Not_Started;
     public Text StatusLabel;
     public Text PoseLabel;
-    bool ended = false;
-    bool started = false;
+    bool record_ended = false;
+    bool record_started = false;
 
     private Recorder HeadRecorder;
     private Recorder LeftRecorder;
     private Recorder RightRecorder;
+
+    public Material MaterialReocrd;
+    public Material MaterialValidate;
+
 
     int last_elapsed = -1;
     int count = 0;
@@ -29,7 +43,8 @@ public class PoseRecorderVC : MonoBehaviour
     void Start()
     {
         // Activate VR
-        //StartCoroutine(SetVRDevice("OpenVR", true));
+        StartCoroutine(SetVRDevice("OpenVR", true));
+
         StatusLabel.text = "Hold the trigger to start recording";
         int poseId = Prefs.GetPoseID();
 
@@ -45,20 +60,36 @@ public class PoseRecorderVC : MonoBehaviour
         Pose pose = query.First();
         PoseLabel.text = pose.Name;
 
-        HeadRecorder = new Recorder(poseId, XRNode.Head, TimePoint.TYPE_HEAD);
-        LeftRecorder = new Recorder(poseId, XRNode.LeftHand, TimePoint.TYPE_HAND_LEFT);
-        RightRecorder = new Recorder(poseId, XRNode.RightHand, TimePoint.TYPE_HAND_RIGHT);
+        HeadRecorder = new Recorder(poseId, XRNode.Head, TimePoint.TYPE_HEAD, MaterialReocrd, MaterialValidate);
+        LeftRecorder = new Recorder(poseId, XRNode.LeftHand, TimePoint.TYPE_HAND_LEFT, MaterialReocrd, MaterialValidate);
+        RightRecorder = new Recorder(poseId, XRNode.RightHand, TimePoint.TYPE_HAND_RIGHT, MaterialReocrd, MaterialValidate);
     }
 
     void Update()
     {
-        try
-        {
+
+  
+
+        //try
+        //{
             //SteamVR_Action_Pose pose = SteamVR_Input.GetPose
-            if (SteamVR_Input.GetBooleanAction("GrabPinch").state)
+            if(Input.GetKey(TRIGGER))
+            //if (SteamVR_Input.GetBooleanAction("GrabPinch").state)
             {
-                // player holding trigger for the first time
-                if (!ended)
+                record_started = true;
+
+            if (state == State.Not_Started)
+            {
+                state = State.Recording_Record;
+            }
+
+            if (state == State.Record_Done)
+            {
+                state = State.Recording_Validation;
+            }
+
+            // player holding trigger for the first time
+            if (state == State.Recording_Record)
                 {
                     StatusLabel.text = "Recording data points";
                     HeadRecorder.Record();
@@ -66,7 +97,7 @@ public class PoseRecorderVC : MonoBehaviour
                     RightRecorder.Record();
                 }
                 // player holding trigger for the second time - validation
-                if (ended)
+                if (state == State.Recording_Validation)
                 {
                     StatusLabel.text = "Recording data points for validation";
                     HeadRecorder.RecordValidate();
@@ -76,19 +107,35 @@ public class PoseRecorderVC : MonoBehaviour
             }
             else
             {
-                if (!ended && started)
+                if (state == State.Recording_Record)
                 {
-                    ended = true;
-                    HeadRecorder.Score();
-                    LeftRecorder.Score();
-                    RightRecorder.Score();
+                    StatusLabel.text = "Recording done. Hold trigger for validation.";
+                    state = State.Record_Done;
                 }
+
+                if (state == State.Recording_Validation)
+                {
+                    double total = 0;
+                    total += HeadRecorder.Score();
+                    total += LeftRecorder.Score();
+                    total += RightRecorder.Score();
+
+                    StatusLabel.text = "Validation done. " + "Total diff " + total.ToString();
+
+                HeadRecorder.Save();
+                LeftRecorder.Save();
+                RightRecorder.Save();
+
+
+                state = State.Validation_Done;
+                }
+
             }
-        }
-        catch
-        {
-            StatusLabel.text = "Error occured while getting input from device";
-        }
+        //}
+        //catch
+        //{
+        //    StatusLabel.text = "Error occured while getting input from device";
+        //}
 
     }
 
@@ -101,15 +148,15 @@ public class PoseRecorderVC : MonoBehaviour
     }
 
 
-    static void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 0.2f)
+    static void DrawLine(Vector3 start, Vector3 end, Material material, float duration = 0.2f)
     {
         GameObject myLine = new GameObject();
         myLine.transform.position = start;
         myLine.AddComponent<LineRenderer>();
         LineRenderer lr = myLine.GetComponent<LineRenderer>();
-        // lr.material = new Material(Shader.Find("Particles/Alpha Blended Premultiply"));
-
-        lr.startColor = color;
+        lr.material = material; // new Material(Shader.Find("Green"));
+        
+        //lr.startColor = color;
 
         lr.startWidth = 0.1f;
         lr.startWidth = 0.01f;
@@ -134,13 +181,17 @@ public class PoseRecorderVC : MonoBehaviour
         int poseType;
         public Dictionary<int, double[]> record_points = new Dictionary<int, double[]>();
         public Dictionary<int, double[]> validate_points = new Dictionary<int, double[]>();
-        #endregion  
+        Material MaterialRecord;
+        Material MaterialValidate;
+        #endregion
 
-        public Recorder(int poseId, XRNode Node, int poseType)
+        public Recorder(int poseId, XRNode Node, int poseType, Material MaterialRecord, Material MaterialValidate)
         {
             this.Node = Node;
             this.poseId = poseId;
             this.poseType = poseType;
+            this.MaterialRecord = MaterialRecord;
+            this.MaterialValidate = MaterialValidate;
         }
 
         public void Record()
@@ -157,11 +208,11 @@ public class PoseRecorderVC : MonoBehaviour
             {
                 record_points.Add(elapsed, new double[] { x_sum / count, y_sum / count, z_sum / count });
                 
-                if (record_points.Count != 0)
+                if (record_points.Count != 0 && record_points.ContainsKey(elapsed - 1))
                 {
                     double[] start = record_points[elapsed - 1];
                     DrawLine(new Vector3((float)start[0], (float)start[1], (float)start[2]), 
-                            new Vector3((float)x_sum / count, (float)y_sum / count, (float)z_sum / count), Color.blue);
+                            new Vector3((float)x_sum / count, (float)y_sum / count, (float)z_sum / count), MaterialRecord);
                 }
                 count = 0;
                 x_sum = y_sum = z_sum = 0;
@@ -180,6 +231,8 @@ public class PoseRecorderVC : MonoBehaviour
             if (!started_validation)
             {
                 start_time = DateTime.Now;
+                count = 0;
+                x_sum = y_sum = z_sum = 0;
                 started_validation = true;
             }
             time = DateTime.Now - start_time;
@@ -187,6 +240,14 @@ public class PoseRecorderVC : MonoBehaviour
             if (last_elapsed != elapsed && count != 0)
             {
                 validate_points.Add(elapsed, new double[] { x_sum / count, y_sum / count, z_sum / count });
+
+                if (validate_points.Count != 0 && validate_points.ContainsKey(elapsed - 1))
+                {
+                    double[] start = validate_points[elapsed - 1];
+                    DrawLine(new Vector3((float)start[0], (float)start[1], (float)start[2]),
+                            new Vector3((float)x_sum / count, (float)y_sum / count, (float)z_sum / count), MaterialValidate);
+                }
+
                 count = 0;
                 x_sum = y_sum = z_sum = 0;
                 last_elapsed = elapsed;
@@ -215,6 +276,7 @@ public class PoseRecorderVC : MonoBehaviour
                 }
                 catch{}
             }
+
             Debug.Log("Total difference " + total_diff);
             return total_diff;
         }
