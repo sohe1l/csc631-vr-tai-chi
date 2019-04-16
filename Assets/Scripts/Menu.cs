@@ -59,6 +59,6 @@ public class Menu : MonoBehaviour
 
     public void PoseRecorderScreen()
     {
-        SceneManager.LoadScene("PoseRecorder");
+        SceneManager.LoadScene("PoseRecorderMenu");
     }
 }
