@@ -18,6 +18,8 @@ public class PoseRecorderVC : MonoBehaviour
         Validation_Done
     }
 
+    bool hasExit = false;
+
     State state = State.Not_Started;
     public Text StatusLabel;
     public Text PoseLabel;
@@ -30,6 +32,9 @@ public class PoseRecorderVC : MonoBehaviour
 
     public Material MaterialReocrd;
     public Material MaterialValidate;
+
+    public GameObject LeftHand;
+    public GameObject RightHand;
 
 
     int last_elapsed = -1;
@@ -67,13 +72,35 @@ public class PoseRecorderVC : MonoBehaviour
 
     void Update()
     {
+        if (hasExit) return;
+
+        LeftHand.transform.SetPositionAndRotation(
+            InputTracking.GetLocalPosition(XRNode.LeftHand),
+            InputTracking.GetLocalRotation(XRNode.LeftHand)
+        );
+
+        RightHand.transform.SetPositionAndRotation(
+            InputTracking.GetLocalPosition(XRNode.RightHand),
+            InputTracking.GetLocalRotation(XRNode.RightHand)
+        );
+
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            Exit();
+        }
+
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            SaveExit();
+        }
+
         //try
         //{
-            //SteamVR_Action_Pose pose = SteamVR_Input.GetPose
-            if(Input.GetKey(TRIGGER))
-            //if (SteamVR_Input.GetBooleanAction("GrabPinch").state)
-            {
-                record_started = true;
+        //SteamVR_Action_Pose pose = SteamVR_Input.GetPose
+        if (Input.GetKey(TRIGGER))
+        //if (SteamVR_Input.GetBooleanAction("GrabPinch").state)
+        {
+            record_started = true;
 
             if (state == State.Not_Started)
             {
@@ -87,37 +114,37 @@ public class PoseRecorderVC : MonoBehaviour
 
             // player holding trigger for the first time
             if (state == State.Recording_Record)
-                {
-                    StatusLabel.text = "Recording data points";
-                    HeadRecorder.Record();
-                    LeftRecorder.Record();
-                    RightRecorder.Record();
-                }
-                // player holding trigger for the second time - validation
-                if (state == State.Recording_Validation)
-                {
-                    StatusLabel.text = "Recording data points for validation";
-                    HeadRecorder.RecordValidate();
-                    LeftRecorder.RecordValidate();
-                    RightRecorder.RecordValidate();
-                }
-            }
-            else
             {
-                if (state == State.Recording_Record)
-                {
-                    StatusLabel.text = "Recording done. Hold trigger for validation.";
-                    state = State.Record_Done;
-                }
+                StatusLabel.text = "Recording data points";
+                HeadRecorder.Record();
+                LeftRecorder.Record();
+                RightRecorder.Record();
+            }
+            // player holding trigger for the second time - validation
+            if (state == State.Recording_Validation)
+            {
+                StatusLabel.text = "Recording data points for validation";
+                HeadRecorder.RecordValidate();
+                LeftRecorder.RecordValidate();
+                RightRecorder.RecordValidate();
+            }
+        }
+        else
+        {
+            if (state == State.Recording_Record)
+            {
+                StatusLabel.text = "Recording done. Hold trigger for validation.";
+                state = State.Record_Done;
+            }
 
-                if (state == State.Recording_Validation)
-                {
-                    double total = 0;
-                    total += HeadRecorder.Score();
-                    total += LeftRecorder.Score();
-                    total += RightRecorder.Score();
+            if (state == State.Recording_Validation)
+            {
+                double total = 0;
+                total += HeadRecorder.Score();
+                total += LeftRecorder.Score();
+                total += RightRecorder.Score();
 
-                    StatusLabel.text = "Validation done. " + "Total diff " + total.ToString();
+                StatusLabel.text = "Validation done. " + "Total diff " + total.ToString();
 
                 HeadRecorder.Save();
                 LeftRecorder.Save();
@@ -125,16 +152,15 @@ public class PoseRecorderVC : MonoBehaviour
 
 
                 state = State.Validation_Done;
-                }
-
             }
+
+        }
         //}
         //catch
         //{
         //    StatusLabel.text = "Error occured while getting input from device";
         //}
     }
-
 
     public void SaveExit()
     {
@@ -148,4 +174,5 @@ public class PoseRecorderVC : MonoBehaviour
     {
         SceneManager.LoadScene("PoseRecorderMenu");
     }
+
 }
