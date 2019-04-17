@@ -13,8 +13,6 @@ public class PlayerVC : MonoBehaviour
     public Transform Step;
     public Transform Attraction;
 
-
-
     public Transform TargetHandLeft;
     public Transform TargetHandRight;
 
@@ -22,7 +20,8 @@ public class PlayerVC : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        // Start VR
+        StartCoroutine(Utils.SetVRDevice("OpenVR", true));
     }
 
     // Update is called once per frame
