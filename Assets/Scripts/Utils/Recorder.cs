@@ -109,6 +109,17 @@ public class Recorder
     {
         var db = DataService.Instance.GetConnection();
 
+        //// delete previous rows
+        //var res = db.Table<TimePoint>()
+        //            .Where(v => v.PoseID.Equals(poseId))
+        //            .Where(v => v.Type.Equals(poseType));
+        //foreach(var row in res)
+        //{
+
+        //}
+
+
+
         foreach (var tp in record_points)
         {
             var timePoint = new TimePoint()
