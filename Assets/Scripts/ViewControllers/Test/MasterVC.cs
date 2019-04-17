@@ -26,6 +26,42 @@ public class MasterVC : MonoBehaviour
 
     float delta = 0;
 
+    public void SwitchPose1()
+    {
+        SwitchPose(1);
+    }
+
+    public void SwitchPose2()
+    {
+        SwitchPose(2);
+    }
+
+    public void SwitchPose3()
+    {
+        SwitchPose(3);
+    }
+
+    public void SwitchPose(int PoseID)
+    {
+        var db = DataService.Instance.GetConnection();
+
+        QueryLeft = db.Table<TimePoint>()
+            .Where(v => v.PoseID.Equals(PoseID))
+            .Where(v => v.Type.Equals(TimePoint.TYPE_HAND_LEFT));
+
+
+        QueryRight = db.Table<TimePoint>()
+            .Where(v => v.PoseID.Equals(PoseID))
+            .Where(v => v.Type.Equals(TimePoint.TYPE_HAND_RIGHT));
+
+        //foreach (TimePoint tp in Query)
+        //{
+        //    Debug.Log(tp.X);
+        //}
+
+        EQ_Left = QueryLeft.GetEnumerator();
+        EQ_Right = QueryRight.GetEnumerator();
+    }
 
     public void LateUpdate()
     {
@@ -60,28 +96,8 @@ public class MasterVC : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        int PoseID = 1;
-        var db = DataService.Instance.GetConnection();
-
-        QueryLeft = db.Table<TimePoint>()
-            .Where(v => v.PoseID.Equals(PoseID))
-            .Where(v => v.Type.Equals(TimePoint.TYPE_HAND_LEFT));
-
-
-        QueryRight = db.Table<TimePoint>()
-    .Where(v => v.PoseID.Equals(PoseID))
-    .Where(v => v.Type.Equals(TimePoint.TYPE_HAND_RIGHT));
-
-        //foreach (TimePoint tp in Query)
-        //{
-        //    Debug.Log(tp.X);
-        //}
-
-
-        EQ_Left = QueryLeft.GetEnumerator();
-        EQ_Right = QueryRight.GetEnumerator();
-
-        }
+        SwitchPose1();
+    }
 
     // Update is called once per frame
     void Update()
