@@ -15,6 +15,7 @@ public class PlayerVC : MonoBehaviour
 
     public Transform TargetHandLeft;
     public Transform TargetHandRight;
+    public GameObject Master;
 
 
     // Start is called before the first frame update
@@ -29,5 +30,9 @@ public class PlayerVC : MonoBehaviour
     {
         TargetHandLeft.transform.position = InputTracking.GetLocalPosition(XRNode.LeftHand);
         TargetHandRight.transform.position = InputTracking.GetLocalPosition(XRNode.RightHand);
+
+        Vector3 m = InputTracking.GetLocalPosition(XRNode.Head);
+           
+        Master.transform.position = new Vector3(m.x, 0, m.z);
     }
 }
