@@ -31,8 +31,18 @@ public class PlayerVC : MonoBehaviour
         TargetHandLeft.transform.position = InputTracking.GetLocalPosition(XRNode.LeftHand);
         TargetHandRight.transform.position = InputTracking.GetLocalPosition(XRNode.RightHand);
 
-        Vector3 m = InputTracking.GetLocalPosition(XRNode.Head);
-           
-        Master.transform.position = new Vector3(m.x, 0, m.z);
+        LookTarget.SetPositionAndRotation(InputTracking.GetLocalPosition(XRNode.Head), InputTracking.GetLocalRotation(XRNode.Head));
+
+        var res = InputTracking.GetLocalRotation(XRNode.Head) *  new Vector3(0, (float)-0.2, 1);
+        LookTarget.transform.position += res;
+        
+        
+
+        Vector3 headLoc = InputTracking.GetLocalPosition(XRNode.Head);
+        Quaternion headRotation = InputTracking.GetLocalRotation(XRNode.Head);
+        headRotation.Set(0, headRotation.y, 0, headRotation.w);
+
+        Master.transform.position = new Vector3(headLoc.x, 0, headLoc.z);
+        Master.transform.rotation = headRotation;
     }
 }
