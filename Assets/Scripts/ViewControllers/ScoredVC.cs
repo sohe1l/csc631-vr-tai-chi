@@ -10,6 +10,7 @@ public class ScoredVC : MonoBehaviour
     public Text inputName;
     public GameObject ScrollViewContent;
     public GameObject LevelRowPrefab;
+    Player player;
 
     private const int LEVEL_ROW_OFFSET = 35;
 
@@ -19,7 +20,7 @@ public class ScoredVC : MonoBehaviour
 
         string playerName = Prefs.GetPlayerName();
         inputName.text = playerName;
-        Player player = Player.GetOrCreatePlayer(playerName);
+        player = Player.GetOrCreatePlayer(playerName);
 
         LoadLevels();
 
