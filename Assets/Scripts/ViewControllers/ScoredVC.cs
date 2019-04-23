@@ -48,6 +48,10 @@ public class ScoredVC : MonoBehaviour
             Text levelName = LevelRow.transform.Find("LevelName").GetComponent<Text>();
             levelName.text = level.Name;
 
+            Text score = LevelRow.transform.Find("Score").GetComponent<Text>();
+            //query scores from the db
+            //set score to score
+
             Button StartBtn = LevelRow.transform.Find("StartBtn").GetComponent<Button>();
             StartBtn.onClick.AddListener(() => LoadLevel(level.Id));
 

@@ -9,7 +9,7 @@ public class TrainingVC : MonoBehaviour
 
     public Text inputName;
     public GameObject ScrollViewContent;
-    public GameObject LevelRowPrefab;
+    public GameObject TrainingRowFab;
 
     private const int LEVEL_ROW_OFFSET = 35;
 
@@ -40,10 +40,12 @@ public class TrainingVC : MonoBehaviour
         int counter = 0;
         foreach (Level level in query)
         {
-            GameObject LevelRow = Instantiate(LevelRowPrefab);
+            GameObject LevelRow = Instantiate(TrainingRowFab);
 
             Text levelName = LevelRow.transform.Find("LevelName").GetComponent<Text>();
             levelName.text = level.Name;
+
+           // Toggle completion = LevelRow.transform.Find("Completion").GetComponent<Toggle>();
 
             Button StartBtn = LevelRow.transform.Find("StartBtn").GetComponent<Button>();
             StartBtn.onClick.AddListener(() => LoadLevel(level.Id));
