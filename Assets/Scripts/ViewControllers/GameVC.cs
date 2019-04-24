@@ -12,10 +12,16 @@ public class GameVC : MonoBehaviour
     public GameObject YellowBorder;
     bool isCreated;
 
+    public GameObject redScreen;
+
 
     // Start is called before the first frame update
     void Start()
     {
+
+        // Start VR
+        StartCoroutine(Utils.SetVRDevice("OpenVR", true));
+
         Level = Prefs.GetLevelID();
 
         // Debug.Log(Prefs.GetLevelID());
@@ -30,6 +36,10 @@ public class GameVC : MonoBehaviour
     {
         showMoveOffRange();
         showNirvana();
+
+        redScreen.SetActive(true);
+
+
     }
 
 
@@ -43,13 +53,20 @@ public class GameVC : MonoBehaviour
 
     }
 
+    void HideAllOverlays()
+    {
+        
+    }
+
 
     void showNirvana()
     {
         if (Player.transform.position == new Vector3(1, 0, 0) & !isCreated)
         {
+
+
             Instantiate(YellowBorder, new Vector3(0, 0, 0), Quaternion.identity);
-            Destroy(YellowBorder, 0.5f);
+            //Destroy(YellowBorder, 0.5f);
             isCreated = true;
         }
     }
@@ -64,7 +81,7 @@ public class GameVC : MonoBehaviour
         if(Player.transform.position == new Vector3(0,0,0) & !isCreated)
         {
             Instantiate(RedBorder, new Vector3(0, 0, 0), Quaternion.identity);
-            Destroy(RedBorder, 0.5f);
+            //Destroy(RedBorder, 0.5f);
             isCreated = true;
         }
     }
