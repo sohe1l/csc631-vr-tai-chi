@@ -12,7 +12,7 @@ public class ScoredVC : MonoBehaviour
     public GameObject LevelRowPrefab;
     Player player;
 
-    private const int LEVEL_ROW_OFFSET = 35;
+    private const int LEVEL_ROW_OFFSET = 50;
 
         // Start is called before the first frame update
     void Start()
@@ -51,6 +51,13 @@ public class ScoredVC : MonoBehaviour
             Text score = LevelRow.transform.Find("Score").GetComponent<Text>();
             //query scores from the db
             //set score to score
+            var userScore = db.Table<Leaderboard>()
+                .Where(v => v.Level.Equals(level.Id))
+                .Where(v => v.Player_id.Equals(player.Id));
+            if (userScore.Count() != 0)
+            {
+                score.text = userScore.First().Score.ToString();
+            }
 
             Button StartBtn = LevelRow.transform.Find("StartBtn").GetComponent<Button>();
             StartBtn.onClick.AddListener(() => LoadLevel(level.Id));
