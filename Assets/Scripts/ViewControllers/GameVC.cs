@@ -7,6 +7,11 @@ public class GameVC : MonoBehaviour
 
     private int currentScore;
     private int Level;
+    public GameObject Player;
+    public GameObject RedBorder;
+    public GameObject YellowBorder;
+    bool isCreated;
+
 
     // Start is called before the first frame update
     void Start()
@@ -23,7 +28,8 @@ public class GameVC : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        showMoveOffRange();
+        showNirvana();
     }
 
 
@@ -40,7 +46,12 @@ public class GameVC : MonoBehaviour
 
     void showNirvana()
     {
-
+        if (Player.transform.position == new Vector3(1, 0, 0) & !isCreated)
+        {
+            Instantiate(YellowBorder, new Vector3(0, 0, 0), Quaternion.identity);
+            Destroy(YellowBorder, 0.5f);
+            isCreated = true;
+        }
     }
 
     void showMoveInRange()
@@ -50,7 +61,12 @@ public class GameVC : MonoBehaviour
 
     void showMoveOffRange()
     {
-
+        if(Player.transform.position == new Vector3(0,0,0) & !isCreated)
+        {
+            Instantiate(RedBorder, new Vector3(0, 0, 0), Quaternion.identity);
+            Destroy(RedBorder, 0.5f);
+            isCreated = true;
+        }
     }
 
     // update chi meter for nirvana during the game
