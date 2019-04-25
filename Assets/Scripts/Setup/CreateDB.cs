@@ -27,9 +27,60 @@ public class CreateDB : MonoBehaviour
 
         InsertPoses();
         InsertLevels();
+        InsertLeaderboard();
     }
 
 
+    void InsertLeaderboard()
+    {
+
+        var db = DataService.Instance.GetConnection();
+
+        db.Insert(new Leaderboard()
+        {
+            Player_id = 1,
+            Level = 1,
+            Score = 100
+        });
+
+        db.Insert(new Leaderboard()
+        {
+            Player_id = 1,
+            Level = 2,
+            Score = 200
+        });
+
+        db.Insert(new Leaderboard()
+        {
+            Player_id = 1,
+            Level = 3,
+            Score = 300
+        });
+
+
+        db.Insert(new Leaderboard()
+        {
+            Player_id = 2,
+            Level = 1,
+            Score = 50
+        });
+
+        db.Insert(new Leaderboard()
+        {
+            Player_id = 2,
+            Level = 2,
+            Score = 51
+        });
+
+        db.Insert(new Leaderboard()
+        {
+            Player_id = 2,
+            Level = 3,
+            Score = 52
+        });
+
+
+    }
 
     void InsertPoses()
     {
