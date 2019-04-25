@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameVC : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class GameVC : MonoBehaviour
     public GameObject Player;
     public GameObject redScreen;
     public GameObject YellowScreen;
+    public Text score;
 
 
     // Start is called before the first frame update
@@ -20,7 +22,7 @@ public class GameVC : MonoBehaviour
         StartCoroutine(Utils.SetVRDevice("OpenVR", true));
 
         Level = Prefs.GetLevelID();
-
+        currentScore = 31991;
        
 
         // Debug.Log(Prefs.GetLevelID());
@@ -36,6 +38,7 @@ public class GameVC : MonoBehaviour
         HideAllOverlays();
         showMoveOffRange();
         showNirvana();
+        updateScore();
 
 
 
@@ -92,6 +95,7 @@ public class GameVC : MonoBehaviour
     // update current score in during game play
     void updateScore()
     {
+        score.text = "Score: " + currentScore.ToString();
 
     }
 
