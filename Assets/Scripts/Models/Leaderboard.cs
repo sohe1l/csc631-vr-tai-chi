@@ -7,7 +7,7 @@ public class Leaderboard
 {
     [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
-    public string Player_id { get; set; }
+    public int Player_id { get; set; }
     public int Level { get; set; }
     public int Score { get; set; }
     public int Timestamp; 
