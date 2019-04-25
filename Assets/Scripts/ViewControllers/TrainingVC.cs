@@ -19,7 +19,7 @@ public class TrainingVC : MonoBehaviour
     {
         string playerName = Prefs.GetPlayerName();
         inputName.text = playerName;
-        Player player = Player.GetOrCreatePlayer(playerName);
+        player = Player.GetOrCreatePlayer(playerName);
 
         LoadLevels();
     }
@@ -52,9 +52,8 @@ public class TrainingVC : MonoBehaviour
                .Where(v => v.Player_id.Equals(player.Id));
 
             Debug.Log(userScore);
-            if (userScore != null && userScore.Count() != 0)
+            if ( userScore.Count() != 0)
             {
-                Debug.Log("level " + level.Id + "  completed ");
 
                 completion.isOn = true;
             }
