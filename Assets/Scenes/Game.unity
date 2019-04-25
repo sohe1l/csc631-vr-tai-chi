@@ -1429,6 +1429,7 @@ MonoBehaviour:
   Player: {fileID: 1709609975}
   redScreen: {fileID: 1996785032}
   YellowScreen: {fileID: 2111405560}
+  score: {fileID: 647835222}
 --- !u!4 &661527694
 Transform:
   m_ObjectHideFlags: 0
