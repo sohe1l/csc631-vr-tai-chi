@@ -8,11 +8,8 @@ public class GameVC : MonoBehaviour
     private int currentScore;
     private int Level;
     public GameObject Player;
-    public GameObject RedBorder;
-    public GameObject YellowBorder;
-    bool isCreated;
-
     public GameObject redScreen;
+    public GameObject YellowScreen;
 
 
     // Start is called before the first frame update
@@ -24,20 +21,22 @@ public class GameVC : MonoBehaviour
 
         Level = Prefs.GetLevelID();
 
+       
+
         // Debug.Log(Prefs.GetLevelID());
         // Debug.Log(Prefs.GetPlayerName());
 
-        
+
 
     }
 
     // Update is called once per frame
     void Update()
     {
+        HideAllOverlays();
         showMoveOffRange();
         showNirvana();
 
-        redScreen.SetActive(true);
 
 
     }
@@ -55,19 +54,17 @@ public class GameVC : MonoBehaviour
 
     void HideAllOverlays()
     {
-        
+        redScreen.SetActive(false);
+        YellowScreen.SetActive(false);
+
     }
 
 
     void showNirvana()
     {
-        if (Player.transform.position == new Vector3(1, 0, 0) & !isCreated)
+        if (Player.transform.position == new Vector3(1, 0, 0))
         {
-
-
-            Instantiate(YellowBorder, new Vector3(0, 0, 0), Quaternion.identity);
-            //Destroy(YellowBorder, 0.5f);
-            isCreated = true;
+            YellowScreen.SetActive(true);
         }
     }
 
@@ -78,11 +75,9 @@ public class GameVC : MonoBehaviour
 
     void showMoveOffRange()
     {
-        if(Player.transform.position == new Vector3(0,0,0) & !isCreated)
+        if(Player.transform.position == new Vector3(0,0,0))
         {
-            Instantiate(RedBorder, new Vector3(0, 0, 0), Quaternion.identity);
-            //Destroy(RedBorder, 0.5f);
-            isCreated = true;
+            redScreen.SetActive(true);
         }
     }
 
