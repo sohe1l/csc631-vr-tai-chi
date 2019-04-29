@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.XR;
 
 public class GameVC : MonoBehaviour
 {
@@ -13,9 +14,16 @@ public class GameVC : MonoBehaviour
     public GameObject YellowScreen;
     public GameObject GreenScreen;
     public Text score;
+    public TextMesh centerMessage;
+
+    public GameObject RightHand;
+    public GameObject LeftHand;
 
 
-    private Pose[] Poses;
+    private Pose[] Poses; // poses for the current level
+    private int currentPoseIndex = -1; // current pose index. -1 means game not started.
+    int countDown = -1; // countdown for starting game
+
 
 
     // Start is called before the first frame update
@@ -28,13 +36,27 @@ public class GameVC : MonoBehaviour
 
         Level = Prefs.GetLevelID();
         loadLevel();
-       
+
 
         // Debug.Log(Prefs.GetLevelID());
         // Debug.Log(Prefs.GetPlayerName());
 
+        InvokeRepeating("RunCountDown", 0, 1);
+    }
 
 
+    void RunCountDown()
+    {
+        if(countDown == -1)
+        {
+            CancelInvoke("RunCountDown");
+            centerMessage.text = "";
+            // start the game
+
+            return;
+        }
+        centerMessage.text = countDown.ToString();
+        countDown--;
     }
 
     // Update is called once per frame
@@ -47,16 +69,22 @@ public class GameVC : MonoBehaviour
         updateScore();
 
 
+        LeftHand.transform.SetPositionAndRotation(
+            InputTracking.GetLocalPosition(XRNode.LeftHand),
+            InputTracking.GetLocalRotation(XRNode.LeftHand)
+        );
+
+        RightHand.transform.SetPositionAndRotation(
+            InputTracking.GetLocalPosition(XRNode.RightHand),
+            InputTracking.GetLocalRotation(XRNode.RightHand)
+        );
 
     }
 
 
     void loadLevel()
-    {
-       
+    {  
         var db = DataService.Instance.GetConnection();
-
-
         var levelQuery = db.Table<Level>()
             .Where(v => v.Id.Equals(Level));
 
@@ -92,6 +120,7 @@ public class GameVC : MonoBehaviour
             }
             Poses[i]  = poseQuery.First();
         }
+        countDown = 10;
     }
 
     void updatePose()
