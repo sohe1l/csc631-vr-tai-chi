@@ -16,7 +16,7 @@ public class VisualVC : MonoBehaviour
 
     public Camera camera;
 
-
+    
 
     public Transform TargetHandLeft;
     public Transform TargetHandRight;
@@ -26,19 +26,29 @@ public class VisualVC : MonoBehaviour
     public GameObject RealHead;
     public GameObject Master;
 
-    public GameObject leadSphereLeft;
-    public GameObject leadSphereRight;
 
     public GameObject handSphereLeft;
     public GameObject handSphereRight;
 
+    public GameObject[] leadingSpheresLeft;
+    public GameObject[] leadingSpheresRight;
+
+    public LineRenderer validationLineLeft;
+    public LineRenderer validationLineRight;
+    public int leadingNumber;
+
 
     int counter = 0;
+
+    //db queries for pose data 
     TableQuery<TimePoint> QueryLeft;
-    IEnumerator<TimePoint> EQ_Left;
     TableQuery<TimePoint> QueryRight;
+
+    //current time point enumerators
+    IEnumerator<TimePoint> EQ_Left;
     IEnumerator<TimePoint> EQ_Right;
 
+    //leading time point enumerators
     IEnumerator<TimePoint> EQ_LeftLead;
     IEnumerator<TimePoint> EQ_RightLead;
 
@@ -76,7 +86,7 @@ public class VisualVC : MonoBehaviour
         EQ_LeftLead = QueryLeft.GetEnumerator();
         EQ_RightLead = QueryRight.GetEnumerator();
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < leadingNumber; i++)
         {
             EQ_LeftLead.MoveNext();
             EQ_RightLead.MoveNext();
@@ -88,6 +98,8 @@ public class VisualVC : MonoBehaviour
     {
         StartCoroutine(Utils.SetVRDevice("OpenVR", true));
 
+        leadingNumber = 7;
+
         handSphereLeft = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         handSphereLeft.transform.localScale = new Vector3((float).1, (float).1, (float).1);
         Renderer objectRenderer = handSphereLeft.GetComponent<Renderer>();
@@ -98,16 +110,10 @@ public class VisualVC : MonoBehaviour
         Renderer objectRenderer2 = handSphereRight.GetComponent<Renderer>();
         objectRenderer2.material.color = Color.green;
 
-        leadSphereLeft = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        leadSphereLeft.transform.localScale = new Vector3((float).1, (float).1, (float).1);
-        Renderer objectRenderer3 = leadSphereLeft.GetComponent<Renderer>();
-        objectRenderer3.material.color = Color.cyan;
-
-        leadSphereRight = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        leadSphereRight.transform.localScale = new Vector3((float).1, (float).1, (float).1);
-        Renderer objectRenderer4 = leadSphereRight.GetComponent<Renderer>();
-        objectRenderer4.material.color = Color.cyan;
-
+        validationLineLeft = CreateLineRenderer();
+        validationLineRight = CreateLineRenderer();
+        leadingSpheresLeft = CreateLeadingSpheres(leadingNumber);
+        leadingSpheresRight = CreateLeadingSpheres(leadingNumber);
 
         SwitchPose1();
     }
@@ -122,26 +128,25 @@ public class VisualVC : MonoBehaviour
             if (delta > 0.1)
             {
 
-
+                //this is the VR input positions I think
                 RealHandLeft.transform.position = UnityEngine.XR.InputTracking.GetLocalPosition(XRNode.LeftHand);
                 RealHandRight.transform.position = UnityEngine.XR.InputTracking.GetLocalPosition(XRNode.RightHand);
 
-
+                //this first section handles the current time enumerators and the validation line
                 EQ_Left.MoveNext();
                 TimePoint tp = EQ_Left.Current;
                 TargetHandLeft.transform.position = new Vector3((float)tp.X, (float)tp.Y, (float)tp.Z);
-
 
                 EQ_Right.MoveNext();
                 TimePoint tpr = EQ_Right.Current;
                 TargetHandRight.transform.position = new Vector3((float)tpr.X, (float)tpr.Y, (float)tpr.Z);
 
                 //first input is database value, second input is player input value
-                StartCoroutine(DrawVisual(TargetHandLeft.transform.position, RealHandLeft.transform.position, handSphereLeft));
+                StartCoroutine(UpdateVisual(TargetHandLeft.transform.position, RealHandLeft.transform.position, handSphereLeft, validationLineLeft));
+                StartCoroutine(UpdateVisual(TargetHandRight.transform.position, RealHandRight.transform.position, handSphereRight, validationLineRight));
 
-                StartCoroutine(DrawVisual(TargetHandRight.transform.position, RealHandRight.transform.position, handSphereRight));
 
-
+                //this second section handles the leading visual trail using separate enumerators which have been pre-incremented
                 EQ_LeftLead.MoveNext();
                 TimePoint tpLeadLeft = EQ_LeftLead.Current;
                 Vector3 leftLeadPoint = new Vector3((float)tpLeadLeft.X, (float)tpLeadLeft.Y, (float)tpLeadLeft.Z);
@@ -150,8 +155,12 @@ public class VisualVC : MonoBehaviour
                 TimePoint tpLeadRight = EQ_RightLead.Current;
                 Vector3 rightLeadPoint = new Vector3((float)tpLeadRight.X, (float)tpLeadRight.Y, (float)tpLeadRight.Z);
 
-                MoveSphere(leadSphereLeft, leftLeadPoint);
-                MoveSphere(leadSphereRight, rightLeadPoint);
+                //MoveSphere(leadSphereLeft, leftLeadPoint);
+                StartCoroutine(MoveLeadingSpheres(leadingSpheresLeft, leftLeadPoint));
+                StartCoroutine(MoveLeadingSpheres(leadingSpheresRight, rightLeadPoint));
+
+                //potential error point! if this try body of the update() method takes too long and the 
+                //next frame updates before the line below is called, delta is not reset and time based events are affected
                 delta = 0;
             }
 
@@ -163,29 +172,15 @@ public class VisualVC : MonoBehaviour
     }
 
     //first input is database value, second input is player input value
-    IEnumerator DrawVisual(Vector3 real, Vector3 trial, GameObject sphere)
+    IEnumerator UpdateVisual(Vector3 real, Vector3 trial, GameObject handSphere, LineRenderer lr)
     {
+        Color c1 = validatePoint(real, trial);
 
-        Color c1;
-
-        sphere.transform.position = real;
-
-        if (validatePoint(real, trial) == true)
-        {
-            c1 = Color.green;
-        }
-        else
-        {
-            c1 = Color.red;
-        }
-
-        Renderer objectRenderer = sphere.GetComponent<Renderer>();
+        handSphere.transform.position = real;
+        Renderer objectRenderer = handSphere.GetComponent<Renderer>();
         objectRenderer.material.color = c1;
 
-
-        //GameObject.Destroy(sphere, (float) 0.1);
-
-        DrawLine(real, trial, Color.red);
+        StartCoroutine(MoveLine(lr, real, trial, c1));
 
         yield return null;
     }
@@ -196,67 +191,75 @@ public class VisualVC : MonoBehaviour
         return;
     }
 
-
-    void DrawLine(Vector3 real, Vector3 trial, Color c1)
+    //used for moving the leading trail of spheres for visual guide
+    IEnumerator MoveLeadingSpheres(GameObject[] spheres, Vector3 leadPoint)
     {
-        //Debug.Log("called from guideline @@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        GameObject myLine = new GameObject();
-        myLine.transform.position = real;
-        myLine.AddComponent<LineRenderer>();
-        LineRenderer lr = myLine.GetComponent<LineRenderer>();
-
-        if (validatePoint(real, trial) == true)
+        for (int i = 0; i < spheres.Length - 1; i++)
         {
-            c1 = Color.green;
-        }
-        else
-        {
-            c1 = Color.red;
+            spheres[i].transform.position = spheres[i + 1].transform.position;
         }
 
-        float duration = (float) .1;
+        spheres[spheres.Length - 1].transform.position = leadPoint;
 
-        lr.material = new Material(Shader.Find("Sprites/Default"));
+        yield return null;
+    }
+
+    IEnumerator MoveLine(LineRenderer lr , Vector3 real, Vector3 trial, Color c1)
+    {
         lr.SetColors(c1, c1);
-        lr.SetWidth(.02f, .02f);
+        lr.SetWidth(.01f, .01f);
         lr.SetPosition(0, trial);
         lr.SetPosition(1, real);
-        GameObject.Destroy(myLine, duration);
+
+        yield return null;
     }
 
 
-    bool validatePoint(Vector3 positionTrue, Vector3 positionTrial, double acceptableDistance = .8)
+    //creates the sphere objects for the leading trail visuals
+    GameObject[] CreateLeadingSpheres(int numSpheres)
+    {
+        GameObject[] spheres = new GameObject[numSpheres];
+
+        for (int i = 0; i < numSpheres; i++)
+        {
+            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.transform.localScale = new Vector3((float).02, (float).02, (float).02);
+            Renderer objectRenderer = sphere.GetComponent<Renderer>();
+            objectRenderer.material.color = Color.cyan;
+            spheres[i] = sphere;
+        }
+
+        //leading sphere is the final index of array
+        GameObject sphere7 = spheres[numSpheres - 1];
+        sphere7.transform.localScale = new Vector3((float).06, (float).06, (float).06);
+        Renderer objectRenderer7 = sphere7.GetComponent<Renderer>();
+        objectRenderer7.material.color = Color.cyan;
+
+        return spheres;
+    }
+
+    LineRenderer CreateLineRenderer()
+    {
+        GameObject myLine = new GameObject();
+        myLine.AddComponent<LineRenderer>();
+        LineRenderer lr = myLine.GetComponent<LineRenderer>();
+        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.SetWidth(.01f, .01f);
+
+        return lr;
+    }
+
+    Color validatePoint(Vector3 positionTrue, Vector3 positionTrial, double acceptableDistance = .1)
     {
         //Debug.Log("distance between points: " + Vector3.Distance(positionTrue, positionTrial));
         if (Vector3.Distance(positionTrue, positionTrial) <= acceptableDistance)
         {
-            //Debug.Log("green");
-            return true;
+            return Color.green;
         }
         else
         {
-            //Debug.Log("red");
-            return false;
+            return Color.red;
         }
     }
 
-    void DrawLine2(Vector3 real, Vector3 trial, Color c1)
-    {
-
-
-        //Debug.Log("called from guideline @@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        GameObject myLine = new GameObject();
-        myLine.transform.position = real;
-        myLine.AddComponent<LineRenderer>();
-        LineRenderer lr = myLine.GetComponent<LineRenderer>();
-
-        float duration = (float).1;
-
-        lr.material = new Material(Shader.Find("Sprites/Default"));
-        lr.SetColors(c1, c1);
-        lr.SetWidth(.02f, .02f);
-        //lr.SetPositions();
-;
-        GameObject.Destroy(myLine, duration);
-    }
 }
