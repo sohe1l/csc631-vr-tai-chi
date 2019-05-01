@@ -1215,7 +1215,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1437959527}
+      - m_Target: {fileID: 0}
         m_MethodName: SwitchPose2
         m_Mode: 1
         m_Arguments:
@@ -1315,7 +1315,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1437959526}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 22fdc03964a3949d782407d22a99cbdb, type: 3}
+  m_Script: {fileID: 11500000, guid: 5b8338a1fa63ce041bc254f8429360ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   FootTarget: []
@@ -1324,10 +1324,12 @@ MonoBehaviour:
   HandPole: {fileID: 0}
   Step: {fileID: 0}
   Attraction: {fileID: 0}
+  camera: {fileID: 0}
   TargetHandLeft: {fileID: 1565660791}
   TargetHandRight: {fileID: 914073662}
-  RealHandLeft: {fileID: 524911340}
-  RealHandRight: {fileID: 641830399}
+  RealHandLeft: {fileID: 524911336}
+  RealHandRight: {fileID: 641830395}
+  RealHead: {fileID: 1833719435}
   Master: {fileID: 0}
 --- !u!4 &1437959528
 Transform:
@@ -1422,7 +1424,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1437959527}
+      - m_Target: {fileID: 0}
         m_MethodName: SwitchPose1
         m_Mode: 1
         m_Arguments:
@@ -1729,7 +1731,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1437959527}
+      - m_Target: {fileID: 0}
         m_MethodName: SwitchPose3
         m_Mode: 1
         m_Arguments:
