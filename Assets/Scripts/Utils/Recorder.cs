@@ -22,6 +22,7 @@ public class Recorder
     int poseType;
     public Dictionary<int, float[]> record_points = new Dictionary<int, float[]>();
     public Dictionary<int, float[]> validate_points = new Dictionary<int, float[]>();
+
     Material MaterialRecord;
     Material MaterialValidate;
     #endregion
@@ -64,7 +65,11 @@ public class Recorder
         int elapsed = (int)(Math.Round(time.Seconds + time.Milliseconds / 1000.0, 1) * 10);
         if (last_elapsed != elapsed && count != 0)
         {
-            dict.Add(elapsed, new float[] { x_sum / count, y_sum / count, z_sum / count });
+            Quaternion inputQ = InputTracking.GetLocalRotation(Node);
+
+
+            dict.Add(elapsed, new float[] { x_sum / count, y_sum / count, z_sum / count,
+                inputQ.x, inputQ.y, inputQ.z, inputQ.w });
 
             if (dict.Count != 0 && dict.ContainsKey(elapsed - 1))
             {
@@ -129,10 +134,16 @@ public class Recorder
                 X = tp.Value[0],
                 Y = tp.Value[1],
                 Z = tp.Value[2],
+                QX = tp.Value[3],
+                QY = tp.Value[4],
+                QZ = tp.Value[5],
+                QW = tp.Value[6],
                 Time = tp.Key
             };
 
             db.Insert(timePoint);
         }
+
+
     }
 }

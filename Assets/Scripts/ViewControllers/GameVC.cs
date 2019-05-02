@@ -69,15 +69,15 @@ public class GameVC : MonoBehaviour
         updateScore();
 
 
-        LeftHand.transform.SetPositionAndRotation(
-            InputTracking.GetLocalPosition(XRNode.LeftHand),
-            InputTracking.GetLocalRotation(XRNode.LeftHand)
-        );
+        //LeftHand.transform.SetPositionAndRotation(
+        //    InputTracking.GetLocalPosition(XRNode.LeftHand),
+        //    InputTracking.GetLocalRotation(XRNode.LeftHand)
+        //);
 
-        RightHand.transform.SetPositionAndRotation(
-            InputTracking.GetLocalPosition(XRNode.RightHand),
-            InputTracking.GetLocalRotation(XRNode.RightHand)
-        );
+        //RightHand.transform.SetPositionAndRotation(
+        //    InputTracking.GetLocalPosition(XRNode.RightHand),
+        //    InputTracking.GetLocalRotation(XRNode.RightHand)
+        //);
 
     }
 

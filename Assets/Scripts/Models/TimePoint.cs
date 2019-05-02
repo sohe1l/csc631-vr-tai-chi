@@ -25,10 +25,21 @@ public class TimePoint
     public float Y { get; set; }
     public float Z { get; set; }
 
+    public float QX { get; set; }
+    public float QY { get; set; }
+    public float QZ { get; set; }
+    public float QW { get; set; }
+
+
     public int Time { get; set; }
 
     public Vector3 getV3()
     {
         return new Vector3(X, Y, Z);
+    }
+
+    public Quaternion getQ()
+    {
+        return new Quaternion(QX, QY, QZ, QW);
     }
 }

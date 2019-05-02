@@ -24,6 +24,8 @@ public class MasterController : MonoBehaviour
     Vector3 InitialHeadPos;
     Vector3 InitialRecordedHeadPos;
 
+    Vector3 eyeOffset = new Vector3(0,0.1f,0);
+
 
     // Start is called before the first frame update
     void Start()
@@ -95,9 +97,14 @@ public class MasterController : MonoBehaviour
                 Vector3 LeftPos = HeadPos - (tpHead - tpLeft);
 
 
-                Head.transform.position = HeadPos;
-                Right.transform.position = RightPos;
-                Left.transform.position = LeftPos;
+                //Head.transform.position = HeadPos;
+                //Right.transform.position = RightPos;
+                //Left.transform.position = LeftPos;
+
+                Head.transform.SetPositionAndRotation(HeadPos - eyeOffset, EQ_Head.Current.getQ());
+                Right.transform.SetPositionAndRotation(RightPos, EQ_Right.Current.getQ());
+                Left.transform.SetPositionAndRotation(LeftPos, EQ_Left.Current.getQ());
+
 
 
                 Debug.Log(EQ_Left.Current);
