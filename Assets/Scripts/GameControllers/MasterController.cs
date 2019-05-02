@@ -25,10 +25,10 @@ public class MasterController : MonoBehaviour
         
 
 
-        Head.transform.SetPositionAndRotation(
-            new Vector3(InitialHeadPos.x, InputTracking.GetLocalPosition(XRNode.Head).y, InitialHeadPos.z),
-            InputTracking.GetLocalRotation(XRNode.Head)
-        );
+        //Head.transform.SetPositionAndRotation(
+        //    new Vector3(InitialHeadPos.x, InputTracking.GetLocalPosition(XRNode.Head).y, InitialHeadPos.z),
+        //    InputTracking.GetLocalRotation(XRNode.Head)
+        //);
 
         //Right.transform.SetPositionAndRotation(
         //    InputTracking.GetLocalPosition(XRNode.RightHand),
