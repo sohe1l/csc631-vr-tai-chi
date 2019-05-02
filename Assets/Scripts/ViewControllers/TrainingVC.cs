@@ -9,7 +9,8 @@ public class TrainingVC : MonoBehaviour
 
     public Text inputName;
     public GameObject ScrollViewContent;
-    public GameObject LevelRowPrefab;
+    public GameObject TrainingRowFab;
+    Player player;
 
     private const int LEVEL_ROW_OFFSET = 35;
 
@@ -18,7 +19,7 @@ public class TrainingVC : MonoBehaviour
     {
         string playerName = Prefs.GetPlayerName();
         inputName.text = playerName;
-        Player player = Player.GetOrCreatePlayer(playerName);
+        player = Player.GetOrCreatePlayer(playerName);
 
         LoadLevels();
     }
@@ -40,10 +41,22 @@ public class TrainingVC : MonoBehaviour
         int counter = 0;
         foreach (Level level in query)
         {
-            GameObject LevelRow = Instantiate(LevelRowPrefab);
+            GameObject LevelRow = Instantiate(TrainingRowFab);
 
             Text levelName = LevelRow.transform.Find("LevelName").GetComponent<Text>();
             levelName.text = level.Name;
+
+            Toggle completion = LevelRow.transform.Find("Completion").GetComponent<Toggle>();
+           var userScore = db.Table<Leaderboard>()
+               .Where(v => v.Level.Equals(level.Id))
+               .Where(v => v.Player_id.Equals(player.Id));
+
+            Debug.Log(userScore);
+            if ( userScore.Count() != 0)
+            {
+
+                completion.isOn = true;
+            }
 
             Button StartBtn = LevelRow.transform.Find("StartBtn").GetComponent<Button>();
             StartBtn.onClick.AddListener(() => LoadLevel(level.Id));
