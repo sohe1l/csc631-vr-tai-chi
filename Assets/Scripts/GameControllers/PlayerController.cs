@@ -21,20 +21,12 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
         Vector3 HeadPos = new Vector3(InitialHeadPos.x, InputTracking.GetLocalPosition(XRNode.Head).y, InitialHeadPos.z);
         Vector3 RightPos = HeadPos - (InputTracking.GetLocalPosition(XRNode.Head) - InputTracking.GetLocalPosition(XRNode.RightHand));
         Vector3 LeftPos = HeadPos - (InputTracking.GetLocalPosition(XRNode.Head) - InputTracking.GetLocalPosition(XRNode.LeftHand));
-
-
+        
         Head.transform.SetPositionAndRotation(HeadPos, InputTracking.GetLocalRotation(XRNode.Head));
         Right.transform.SetPositionAndRotation(RightPos, InputTracking.GetLocalRotation(XRNode.RightHand));
         Left.transform.SetPositionAndRotation(LeftPos, InputTracking.GetLocalRotation(XRNode.LeftHand));
-
-
-
-
-
-
     }
 }
