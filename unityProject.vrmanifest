@@ -5,7 +5,7 @@
       "app_key": "application.generated.unity.vrtaichi.exe",
       "launch_type": "url",
       "url": "steam://launch/",
-      "action_manifest_path": "C:\\Users\\JPL-DMS-VRLT-02\\Downloads\\csc631-vr-tai-chi-master\\csc631-vr-tai-chi-master\\actions.json",
+      "action_manifest_path": "C:\\Users\\JPL-DMS-VRLT-02\\Documents\\GitHub\\csc631-vr-tai-chi\\actions.json",
       "strings": {
         "en_us": {
           "name": "VR Tai Chi [Testing]"
