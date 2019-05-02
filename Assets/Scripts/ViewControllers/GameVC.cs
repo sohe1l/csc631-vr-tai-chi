@@ -6,7 +6,7 @@ using UnityEngine.XR;
 
 public class GameVC : MonoBehaviour
 {
-    private int currentScore;
+    public int currentScore;
     private int Level;
     public GameObject Player;
     public GameObject Master;

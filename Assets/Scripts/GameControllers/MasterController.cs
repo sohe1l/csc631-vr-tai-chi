@@ -67,12 +67,16 @@ public class MasterController : MonoBehaviour
     void Update()
     {
 
+
         try
         {
 
             delta += Time.deltaTime;
             if (delta > 0.1)
             {
+
+
+
                 if (!EQ_Left.MoveNext())
                 {
                     EQ_Left.Reset();
@@ -80,26 +84,18 @@ public class MasterController : MonoBehaviour
                     EQ_Head.Reset();
                 }
                 Vector3 tpLeft = EQ_Left.Current.getV3();
-                //Left.transform.position = new Vector3((float)tp.X, (float)tp.Y, (float)tp.Z);
 
 
                 EQ_Right.MoveNext();
-                Vector3 tpRight = EQ_Right.Current.getV3();
-                //Right.transform.position = new Vector3((float)tpr.X, (float)tpr.Y, (float)tpr.Z);
-
                 EQ_Head.MoveNext();
+                Vector3 tpRight = EQ_Right.Current.getV3();
                 Vector3 tpHead = EQ_Head.Current.getV3();
-                //Head.transform.position = new Vector3((float)tprt.X, (float)tprt.Y, (float)tprt.Z);
 
 
                 Vector3 HeadPos = InitialHeadPos - (InitialRecordedHeadPos - tpHead);
                 Vector3 RightPos = HeadPos - (tpHead - tpRight);
                 Vector3 LeftPos = HeadPos - (tpHead - tpLeft);
 
-
-                //Head.transform.position = HeadPos;
-                //Right.transform.position = RightPos;
-                //Left.transform.position = LeftPos;
 
                 Head.transform.SetPositionAndRotation(HeadPos - eyeOffset, EQ_Head.Current.getQ());
                 Right.transform.SetPositionAndRotation(RightPos, EQ_Right.Current.getQ());
