@@ -146,11 +146,6 @@ public class PoseRecorderVC : MonoBehaviour
 
                 StatusLabel.text = "Validation done. " + "Total diff " + total.ToString();
 
-                HeadRecorder.Save();
-                LeftRecorder.Save();
-                RightRecorder.Save();
-
-
                 state = State.Validation_Done;
             }
 

@@ -17,7 +17,7 @@ public sealed class PoseLoader : MonoBehaviour
     
     public Vector3 InitialHeadPos;
 
-    public Vector3 LeftV3 { get { return EQ_Left.Current.getV3(); } }
+    public Vector3 LeftV3 { get { Debug.Log(EQ_Left.Current.Id);  return EQ_Left.Current.getV3(); } }
     public Vector3 RightV3 { get { return EQ_Right.Current.getV3(); } }
     public Vector3 HeadV3 { get { return EQ_Head.Current.getV3(); } }
 
@@ -31,8 +31,8 @@ public sealed class PoseLoader : MonoBehaviour
     }
     public void SwitchPose(int PoseID)
     {
-        this.PoseID = PoseID;
-
+        this.PoseID = -1;
+        
         var db = DataService.Instance.GetConnection();
 
         QueryLeft = db.Table<TimePoint>()
@@ -57,6 +57,7 @@ public sealed class PoseLoader : MonoBehaviour
         InitialHeadPos = EQ_Head.Current.getV3();
         EQ_Head.Reset();
 
+        this.PoseID = PoseID;
     }
 
     public bool NextFrame()

@@ -91,6 +91,7 @@ public class GameVC : MonoBehaviour
 
             if (currentPoseIndex != -1 && !PL.NextFrame()) {
                 currentPoseIndex++;
+                Debug.Log("Changed to the pose " + currentPoseIndex);
                 PL.SwitchPose(Poses[currentPoseIndex].Id);
             }
             masterController.UpdateMaster();
