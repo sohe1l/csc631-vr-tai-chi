@@ -8,12 +8,6 @@ public class MasterController : MonoBehaviour
 {
  
     int counter = 0;
-    TableQuery<TimePoint> QueryLeft;
-    IEnumerator<TimePoint> EQ_Left;
-    TableQuery<TimePoint> QueryRight;
-    IEnumerator<TimePoint> EQ_Right;
-    TableQuery<TimePoint> QueryHead;
-    IEnumerator<TimePoint> EQ_Head;
 
     float delta = 0;
 
@@ -25,44 +19,18 @@ public class MasterController : MonoBehaviour
     Vector3 InitialRecordedHeadPos;
 
     Vector3 eyeOffset = new Vector3(0,0.1f,0);
-
+    PoseLoader PL = PoseLoader.Instance;
 
     // Start is called before the first frame update
     void Start()
     {
         InitialHeadPos = Head.transform.transform.position;
-        SwitchPose(1);
- 
+        
+        PL.SwitchPose(1); 
     }
 
 
-    public void SwitchPose(int PoseID)
-    {
-        var db = DataService.Instance.GetConnection();
-
-        QueryLeft = db.Table<TimePoint>()
-            .Where(v => v.PoseID.Equals(PoseID))
-            .Where(v => v.Type.Equals(TimePoint.TYPE_HAND_LEFT));
-
-
-        QueryRight = db.Table<TimePoint>()
-            .Where(v => v.PoseID.Equals(PoseID))
-            .Where(v => v.Type.Equals(TimePoint.TYPE_HAND_RIGHT));
-
-        QueryHead = db.Table<TimePoint>()
-            .Where(v => v.PoseID.Equals(PoseID))
-            .Where(v => v.Type.Equals(TimePoint.TYPE_HEAD));
-
-
-        EQ_Left = QueryLeft.GetEnumerator();
-        EQ_Right = QueryRight.GetEnumerator();
-        EQ_Head = QueryHead.GetEnumerator();
-
-        EQ_Head.MoveNext();
-        InitialRecordedHeadPos = EQ_Head.Current.getV3();
-        EQ_Head.Reset();
-  
-    }
+    
 
     void Update()
     {
@@ -77,19 +45,19 @@ public class MasterController : MonoBehaviour
 
 
 
-                if (!EQ_Left.MoveNext())
+                if (!PL.EQ_Left.MoveNext())
                 {
-                    EQ_Left.Reset();
-                    EQ_Right.Reset();
-                    EQ_Head.Reset();
+                    PL.EQ_Left.Reset();
+                    PL.EQ_Right.Reset();
+                    PL.EQ_Head.Reset();
                 }
-                Vector3 tpLeft = EQ_Left.Current.getV3();
+                Vector3 tpLeft = PL.EQ_Left.Current.getV3();
 
 
-                EQ_Right.MoveNext();
-                EQ_Head.MoveNext();
-                Vector3 tpRight = EQ_Right.Current.getV3();
-                Vector3 tpHead = EQ_Head.Current.getV3();
+                PL.EQ_Right.MoveNext();
+                PL.EQ_Head.MoveNext();
+                Vector3 tpRight = PL.EQ_Right.Current.getV3();
+                Vector3 tpHead = PL.EQ_Head.Current.getV3();
 
 
                 Vector3 HeadPos = InitialHeadPos - (InitialRecordedHeadPos - tpHead);
@@ -97,13 +65,13 @@ public class MasterController : MonoBehaviour
                 Vector3 LeftPos = HeadPos - (tpHead - tpLeft);
 
 
-                Head.transform.SetPositionAndRotation(HeadPos - eyeOffset, EQ_Head.Current.getQ());
-                Right.transform.SetPositionAndRotation(RightPos, EQ_Right.Current.getQ());
-                Left.transform.SetPositionAndRotation(LeftPos, EQ_Left.Current.getQ());
+                Head.transform.SetPositionAndRotation(HeadPos - eyeOffset, PL.EQ_Head.Current.getQ());
+                Right.transform.SetPositionAndRotation(RightPos, PL.EQ_Right.Current.getQ());
+                Left.transform.SetPositionAndRotation(LeftPos, PL.EQ_Left.Current.getQ());
 
 
 
-                Debug.Log(EQ_Left.Current);
+                Debug.Log(PL.EQ_Left.Current);
                 
                 delta = 0;
             }

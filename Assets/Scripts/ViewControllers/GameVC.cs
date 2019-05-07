@@ -47,38 +47,31 @@ public class GameVC : MonoBehaviour
 
     void RunCountDown()
     {
-        if(countDown == -1)
+        countDown--;
+
+        if (countDown == 0)
+        {
+            centerMessage.text = "Start";
+            return;
+        }
+        else if(countDown == -1)
         {
             CancelInvoke("RunCountDown");
             centerMessage.text = "";
-            // start the game
-
+            currentPoseIndex = 0;
             return;
         }
-        centerMessage.text = countDown.ToString();
-        countDown--;
+        centerMessage.text = countDown.ToString(); 
     }
 
     // Update is called once per frame
     void Update()
     {
-        HideAllOverlays();
-        showMoveOffRange();
-        showMoveInRange();
-        showNirvana();
-        updateScore();
-
-
-        //LeftHand.transform.SetPositionAndRotation(
-        //    InputTracking.GetLocalPosition(XRNode.LeftHand),
-        //    InputTracking.GetLocalRotation(XRNode.LeftHand)
-        //);
-
-        //RightHand.transform.SetPositionAndRotation(
-        //    InputTracking.GetLocalPosition(XRNode.RightHand),
-        //    InputTracking.GetLocalRotation(XRNode.RightHand)
-        //);
-
+        //HideAllOverlays();
+        //showMoveOffRange();
+        //showMoveInRange();
+        //showNirvana();
+        //updateScore();
     }
 
 
