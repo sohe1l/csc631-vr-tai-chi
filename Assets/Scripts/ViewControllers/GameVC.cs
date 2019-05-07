@@ -6,10 +6,13 @@ using UnityEngine.XR;
 
 public class GameVC : MonoBehaviour
 {
+
+    public GameObject Master; // reference to the master object
+    private MasterController masterController; // refrence to master controller script on master object
+
     public int currentScore;
     private int Level;
     public GameObject Player;
-    public GameObject Master;
     public GameObject RedScreen;
     public GameObject YellowScreen;
     public GameObject GreenScreen;
@@ -18,6 +21,10 @@ public class GameVC : MonoBehaviour
 
     public GameObject RightHand;
     public GameObject LeftHand;
+
+    PoseLoader PL = PoseLoader.Instance;
+    float delta = 0;
+
 
 
     private Pose[] Poses; // poses for the current level
@@ -29,6 +36,10 @@ public class GameVC : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
+        // get controllers
+        masterController = Master.GetComponent<MasterController>();
+
         //hardcoded score
         currentScore = 4569;
         // Start VR
@@ -54,14 +65,15 @@ public class GameVC : MonoBehaviour
             centerMessage.text = "Start";
             return;
         }
-        else if(countDown == -1)
+        else if (countDown == -1)
         {
             CancelInvoke("RunCountDown");
             centerMessage.text = "";
             currentPoseIndex = 0;
+            PL.SwitchPose(Poses[currentPoseIndex].Id);
             return;
         }
-        centerMessage.text = countDown.ToString(); 
+        centerMessage.text = countDown.ToString();
     }
 
     // Update is called once per frame
@@ -72,11 +84,26 @@ public class GameVC : MonoBehaviour
         //showMoveInRange();
         //showNirvana();
         //updateScore();
+
+        delta += Time.deltaTime;
+        if (delta > 0.1)
+        {
+
+            if (currentPoseIndex != -1 && !PL.NextFrame()) {
+                currentPoseIndex++;
+                PL.SwitchPose(Poses[currentPoseIndex].Id);
+            }
+            masterController.UpdateMaster();
+            delta = 0;
+        }
+
+
+
     }
 
 
     void loadLevel()
-    {  
+    {
         var db = DataService.Instance.GetConnection();
         var levelQuery = db.Table<Level>()
             .Where(v => v.Id.Equals(Level));
@@ -96,10 +123,10 @@ public class GameVC : MonoBehaviour
 
 
         string[] poses = currentLevel.Poses.Split(',');
-    
+
         Poses = new Pose[poses.Length];
 
-        for(int i = 0; i < poses.Length; i++)
+        for (int i = 0; i < poses.Length; i++)
         {
             int poseId = int.Parse(poses[i]);
             var poseQuery = db.Table<Pose>()
@@ -111,7 +138,7 @@ public class GameVC : MonoBehaviour
                 // StatusLabel.text = "Error! Invalid level ID.";
                 return;
             }
-            Poses[i]  = poseQuery.First();
+            Poses[i] = poseQuery.First();
         }
         countDown = 10;
     }
@@ -148,7 +175,7 @@ public class GameVC : MonoBehaviour
 
     void showMoveOffRange()
     {   //shows red border if player is out of range 
-        if (Player.transform.position == new Vector3(0,0,0))
+        if (Player.transform.position == new Vector3(0, 0, 0))
         {
             RedScreen.SetActive(true);
         }
@@ -165,7 +192,7 @@ public class GameVC : MonoBehaviour
     // update current score in during game play
     void updateScore()
     {
-       
+
         score.text = "Score: " + currentScore.ToString();
 
     }

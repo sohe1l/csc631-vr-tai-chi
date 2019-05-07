@@ -16,7 +16,6 @@ public class MasterController : MonoBehaviour
     public GameObject Left;
 
     Vector3 InitialHeadPos;
-    Vector3 InitialRecordedHeadPos;
 
     Vector3 eyeOffset = new Vector3(0,0.1f,0);
     PoseLoader PL = PoseLoader.Instance;
@@ -24,63 +23,53 @@ public class MasterController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        InitialHeadPos = Head.transform.transform.position;
-        
-        PL.SwitchPose(1); 
+        InitialHeadPos = Head.transform.transform.position; 
     }
 
 
-    
+    public void UpdateMaster()
+    {
+        if (PL.IsLoaded())
+        {
+            Vector3 HeadPos = InitialHeadPos - (PL.InitialHeadPos - PL.HeadV3) - eyeOffset;
+            Vector3 RightPos = HeadPos - (PL.HeadV3 - PL.RightV3);
+            Vector3 LeftPos = HeadPos - (PL.HeadV3 - PL.LeftV3);
+
+            Head.transform.SetPositionAndRotation(HeadPos, PL.HeadQ);
+            Right.transform.SetPositionAndRotation(RightPos, PL.RightQ);
+            Left.transform.SetPositionAndRotation(LeftPos, PL.LeftQ);
+        }
+
+    }
+
+
 
     void Update()
     {
+        //try
+        //{
+        //    delta += Time.deltaTime;
+        //    if (delta > 0.1)
+        //    {
 
+        //        if (!PL.NextFrame()) PL.Reset();
+       
+        //        Vector3 HeadPos = InitialHeadPos - (PL.InitialHeadPos - PL.HeadV3) - eyeOffset;
+        //        Vector3 RightPos = HeadPos - (PL.HeadV3 - PL.RightV3);
+        //        Vector3 LeftPos = HeadPos - (PL.HeadV3 - PL.LeftV3);
 
-        try
-        {
-
-            delta += Time.deltaTime;
-            if (delta > 0.1)
-            {
-
-
-
-                if (!PL.EQ_Left.MoveNext())
-                {
-                    PL.EQ_Left.Reset();
-                    PL.EQ_Right.Reset();
-                    PL.EQ_Head.Reset();
-                }
-                Vector3 tpLeft = PL.EQ_Left.Current.getV3();
-
-
-                PL.EQ_Right.MoveNext();
-                PL.EQ_Head.MoveNext();
-                Vector3 tpRight = PL.EQ_Right.Current.getV3();
-                Vector3 tpHead = PL.EQ_Head.Current.getV3();
-
-
-                Vector3 HeadPos = InitialHeadPos - (InitialRecordedHeadPos - tpHead);
-                Vector3 RightPos = HeadPos - (tpHead - tpRight);
-                Vector3 LeftPos = HeadPos - (tpHead - tpLeft);
-
-
-                Head.transform.SetPositionAndRotation(HeadPos - eyeOffset, PL.EQ_Head.Current.getQ());
-                Right.transform.SetPositionAndRotation(RightPos, PL.EQ_Right.Current.getQ());
-                Left.transform.SetPositionAndRotation(LeftPos, PL.EQ_Left.Current.getQ());
-
-
-
-                Debug.Log(PL.EQ_Left.Current);
+        //        Head.transform.SetPositionAndRotation(HeadPos, PL.HeadQ);
+        //        Right.transform.SetPositionAndRotation(RightPos, PL.RightQ);
+        //        Left.transform.SetPositionAndRotation(LeftPos, PL.LeftQ);
                 
-                delta = 0;
-            }
+        //        delta = 0;
+        //    }
 
-        }
-        catch
-        {
+        //}
+        //catch
+        //{
 
-        }
+        //}
 
         
 

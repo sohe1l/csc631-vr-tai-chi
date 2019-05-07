@@ -5,6 +5,7 @@ using UnityEngine;
 
 public sealed class PoseLoader : MonoBehaviour
 {
+    private int PoseID = -1;
 
     private TableQuery<TimePoint> QueryLeft;
     private TableQuery<TimePoint> QueryRight;
@@ -13,11 +14,25 @@ public sealed class PoseLoader : MonoBehaviour
     public IEnumerator<TimePoint> EQ_Left;
     public IEnumerator<TimePoint> EQ_Right;
     public IEnumerator<TimePoint> EQ_Head;
+    
+    public Vector3 InitialHeadPos;
 
-    Vector3 InitialRecordedHeadPos;
+    public Vector3 LeftV3 { get { return EQ_Left.Current.getV3(); } }
+    public Vector3 RightV3 { get { return EQ_Right.Current.getV3(); } }
+    public Vector3 HeadV3 { get { return EQ_Head.Current.getV3(); } }
 
+    public Quaternion LeftQ { get { return EQ_Left.Current.getQ(); } }
+    public Quaternion RightQ { get { return EQ_Right.Current.getQ(); } }
+    public Quaternion HeadQ { get { return EQ_Head.Current.getQ(); } }
+
+    public bool IsLoaded()
+    {
+        return PoseID != -1;
+    }
     public void SwitchPose(int PoseID)
     {
+        this.PoseID = PoseID;
+
         var db = DataService.Instance.GetConnection();
 
         QueryLeft = db.Table<TimePoint>()
@@ -39,9 +54,26 @@ public sealed class PoseLoader : MonoBehaviour
         EQ_Head = QueryHead.GetEnumerator();
 
         EQ_Head.MoveNext();
-        InitialRecordedHeadPos = EQ_Head.Current.getV3();
+        InitialHeadPos = EQ_Head.Current.getV3();
         EQ_Head.Reset();
 
+    }
+
+    public bool NextFrame()
+    {
+        if (PoseID == -1) return false;
+        if (!EQ_Left.MoveNext()) return false;
+        if (!EQ_Right.MoveNext()) return false;
+        if (!EQ_Head.MoveNext()) return false;
+        return true;
+    }
+
+    public void Reset()
+    {
+        if (PoseID == -1) return;
+        EQ_Left.Reset();
+        EQ_Right.Reset();
+        EQ_Head.Reset();
     }
 
 
@@ -55,6 +87,8 @@ public sealed class PoseLoader : MonoBehaviour
     void Update()
     {
 
+        Debug.Log("Running from loader");
+
     }
 
 
@@ -65,7 +99,6 @@ public sealed class PoseLoader : MonoBehaviour
     }
 
     public static PoseLoader Instance { get { return Nested.instance; } }
-
     private class Nested
     {
         // Explicit static constructor to tell C# compiler
@@ -73,7 +106,6 @@ public sealed class PoseLoader : MonoBehaviour
         static Nested()
         {
         }
-
         internal static readonly PoseLoader instance = new PoseLoader();
     }
 }
