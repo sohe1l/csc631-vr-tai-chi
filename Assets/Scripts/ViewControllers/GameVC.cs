@@ -7,12 +7,28 @@ using UnityEngine.XR;
 public class GameVC : MonoBehaviour
 {
 
+    public GameObject MasterHead;
+    public GameObject MasterRight;
+    public GameObject MasterLeft;
+
+    public GameObject PlayerHead;
+    public GameObject PlayerRight;
+    public GameObject PlayerLeft;
+
+    // relative to head
+    public Vector3 MasterLeftV3 { get { return MasterHead.transform.position - MasterLeft.transform.position; } }
+    public Vector3 MasterRightV3 { get { return MasterHead.transform.position - MasterRight.transform.position; } }
+
+    public Vector3 PlayerLeftV3 { get { return PlayerHead.transform.position - PlayerLeft.transform.position; } }
+    public Vector3 PlayerRightV3 { get { return PlayerHead.transform.position - PlayerRight.transform.position; } }
+
+
+
+
     public GameObject Master;
-    public GameObject Master1;
-    public GameObject Master2; // reference to the master object
     private MasterController masterController;
 
-    public int currentScore;
+    public int currentScore = 0;
     private int Level;
     public GameObject Player;
     public GameObject RedScreen;
@@ -38,12 +54,11 @@ public class GameVC : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        AddScore(0);
 
         // get controllers
         masterController = Master.GetComponent<MasterController>();
 
-        //hardcoded score
-        currentScore = 4569;
         // Start VR
         StartCoroutine(Utils.SetVRDevice("OpenVR", true));
 
@@ -90,20 +105,40 @@ public class GameVC : MonoBehaviour
         delta += Time.deltaTime;
         if (delta > 0.1)
         {
+            if (currentPoseIndex == -1) return;
 
-            if (currentPoseIndex != -1 && !PL.NextFrame()) {
+            if (!PL.NextFrame()) {
+                PL.SetNotLoaded();
                 currentPoseIndex++;
-                Debug.Log("Changed to the pose " + currentPoseIndex);
+                if(currentPoseIndex == Poses.Length)
+                {
+                    EndGame();
+                    return;
+                }
                 PL.SwitchPose(Poses[currentPoseIndex].Id);
             }
             masterController.UpdateMaster();
             delta = 0;
-        }
 
+            if (Vector3.Distance(MasterLeftV3, PlayerLeftV3) < 0.2)
+            {
+                AddScore(1);
+            }
+
+            if (Vector3.Distance(MasterRightV3, PlayerRightV3) < 0.2)
+            {
+                AddScore(1);
+            }
+        }
+    }
+
+    void EndGame()
+    {
+        currentPoseIndex = -1;
+        centerMessage.text = "Well Done! Your score: " + currentScore;
 
 
     }
-
 
     void loadLevel()
     {
@@ -193,11 +228,10 @@ public class GameVC : MonoBehaviour
 
 
     // update current score in during game play
-    void updateScore()
+    void AddScore(int increment)
     {
-
+        currentScore += increment;
         score.text = "Score: " + currentScore.ToString();
-
     }
 
     // saves score to database for leaderboard

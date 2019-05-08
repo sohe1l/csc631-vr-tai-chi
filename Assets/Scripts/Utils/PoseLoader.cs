@@ -30,6 +30,11 @@ public sealed class PoseLoader
     {
         return PoseID != -1;
     }
+
+    public void SetNotLoaded()
+    {
+        PoseID = -1;
+    }
     public void SwitchPose(int PoseID)
     {
         this.PoseID = -1;
