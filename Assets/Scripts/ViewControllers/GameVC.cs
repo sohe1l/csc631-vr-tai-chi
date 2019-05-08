@@ -7,8 +7,10 @@ using UnityEngine.XR;
 public class GameVC : MonoBehaviour
 {
 
-    public GameObject Master; // reference to the master object
-    private MasterController masterController; // refrence to master controller script on master object
+    public GameObject Master;
+    public GameObject Master1;
+    public GameObject Master2; // reference to the master object
+    private MasterController masterController;
 
     public int currentScore;
     private int Level;
@@ -141,7 +143,7 @@ public class GameVC : MonoBehaviour
             }
             Poses[i] = poseQuery.First();
         }
-        countDown = 10;
+        countDown = 3;
     }
 
     void updatePose()

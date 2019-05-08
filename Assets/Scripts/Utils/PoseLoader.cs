@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class PoseLoader : MonoBehaviour
+public sealed class PoseLoader
 {
     private int PoseID = -1;
 
@@ -16,8 +16,9 @@ public sealed class PoseLoader : MonoBehaviour
     public IEnumerator<TimePoint> EQ_Head;
     
     public Vector3 InitialHeadPos;
+    public Quaternion InitialHeadQ;
 
-    public Vector3 LeftV3 { get { Debug.Log(EQ_Left.Current.Id);  return EQ_Left.Current.getV3(); } }
+    public Vector3 LeftV3 { get { return EQ_Left.Current.getV3(); } }
     public Vector3 RightV3 { get { return EQ_Right.Current.getV3(); } }
     public Vector3 HeadV3 { get { return EQ_Head.Current.getV3(); } }
 
@@ -55,6 +56,7 @@ public sealed class PoseLoader : MonoBehaviour
 
         EQ_Head.MoveNext();
         InitialHeadPos = EQ_Head.Current.getV3();
+        InitialHeadQ = EQ_Head.Current.getQ();
         EQ_Head.Reset();
 
         this.PoseID = PoseID;
@@ -78,19 +80,7 @@ public sealed class PoseLoader : MonoBehaviour
     }
 
 
-    // Start is called before the first frame update
-    void Start()
-    {
 
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-        Debug.Log("Running from loader");
-
-    }
 
 
 

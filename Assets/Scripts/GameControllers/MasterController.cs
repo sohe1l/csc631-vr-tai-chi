@@ -16,6 +16,7 @@ public class MasterController : MonoBehaviour
     public GameObject Left;
 
     Vector3 InitialHeadPos;
+    Quaternion InitialQ;
 
     Vector3 eyeOffset = new Vector3(0,0.1f,0);
     PoseLoader PL = PoseLoader.Instance;
@@ -23,7 +24,8 @@ public class MasterController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        InitialHeadPos = Head.transform.transform.position; 
+        InitialHeadPos = Head.transform.position;
+        InitialQ = Head.transform.rotation;
     }
 
 
@@ -31,13 +33,46 @@ public class MasterController : MonoBehaviour
     {
         if (PL.IsLoaded())
         {
+
+
+            Quaternion diff = Quaternion.Inverse(PL.InitialHeadQ) * InitialQ;
+            
+            float angle = Quaternion.Angle(PL.InitialHeadQ, InitialQ);
+
+            Debug.Log(diff.eulerAngles.y);
+            Debug.Log(angle);
+
             Vector3 HeadPos = InitialHeadPos - (PL.InitialHeadPos - PL.HeadV3) - eyeOffset;
+            Head.transform.SetPositionAndRotation(HeadPos, PL.HeadQ * diff);
+
+
             Vector3 RightPos = HeadPos - (PL.HeadV3 - PL.RightV3);
             Vector3 LeftPos = HeadPos - (PL.HeadV3 - PL.LeftV3);
 
-            Head.transform.SetPositionAndRotation(HeadPos, PL.HeadQ);
+
             Right.transform.SetPositionAndRotation(RightPos, PL.RightQ);
             Left.transform.SetPositionAndRotation(LeftPos, PL.LeftQ);
+
+
+            //Right.transform.position = RightPos;
+            //Left.transform.position = LeftPos;
+
+            //Head.transform.RotateAround(HeadPos, angle);
+            //Left.transform.RotateAround(HeadPos, angle);
+            //Right.transform.RotateAround(HeadPos, angle);
+
+            Left.transform.RotateAround(Head.transform.position, Vector3.up, diff.eulerAngles.y);
+            Right.transform.RotateAround(Head.transform.position, Vector3.up, diff.eulerAngles.y);
+
+
+
+            // Head.transform.Rotate(diff.eulerAngles);
+            //Left.transform.Rotate( 180);
+            //Right.transform.Rotate(Head.transform.up, 180);
+            //Right.transform.Rotate(diff.eulerAngles);
+
+
+
         }
 
     }
