@@ -8,12 +8,6 @@ public class MasterController : MonoBehaviour
 {
  
     int counter = 0;
-    TableQuery<TimePoint> QueryLeft;
-    IEnumerator<TimePoint> EQ_Left;
-    TableQuery<TimePoint> QueryRight;
-    IEnumerator<TimePoint> EQ_Right;
-    TableQuery<TimePoint> QueryHead;
-    IEnumerator<TimePoint> EQ_Head;
 
     float delta = 0;
 
@@ -22,130 +16,46 @@ public class MasterController : MonoBehaviour
     public GameObject Left;
 
     Vector3 InitialHeadPos;
-    Vector3 InitialRecordedHeadPos;
+    Quaternion InitialQ;
 
     Vector3 eyeOffset = new Vector3(0,0.1f,0);
-
+    PoseLoader PL = PoseLoader.Instance;
 
     // Start is called before the first frame update
     void Start()
     {
-        InitialHeadPos = Head.transform.transform.position;
-        SwitchPose(1);
- 
+        InitialHeadPos = Head.transform.position;
+        InitialQ = Head.transform.rotation;
     }
 
 
-    public void SwitchPose(int PoseID)
+    public void UpdateMaster()
     {
-        var db = DataService.Instance.GetConnection();
+        if (PL.IsLoaded())
+        {
 
-        QueryLeft = db.Table<TimePoint>()
-            .Where(v => v.PoseID.Equals(PoseID))
-            .Where(v => v.Type.Equals(TimePoint.TYPE_HAND_LEFT));
+            Quaternion diff = Quaternion.Inverse(PL.InitialHeadQ) * InitialQ;
+           
+            Vector3 HeadPos = InitialHeadPos - (PL.InitialHeadPos - PL.HeadV3) - eyeOffset;
+            Head.transform.SetPositionAndRotation(HeadPos, PL.HeadQ * diff);
+        
+            Vector3 RightPos = HeadPos - (PL.HeadV3 - PL.RightV3);
+            Vector3 LeftPos = HeadPos - (PL.HeadV3 - PL.LeftV3);
+        
+            Right.transform.SetPositionAndRotation(RightPos, PL.RightQ);
+            Left.transform.SetPositionAndRotation(LeftPos, PL.LeftQ);
+
+            Left.transform.RotateAround(Head.transform.position, Vector3.up, diff.eulerAngles.y);
+            Right.transform.RotateAround(Head.transform.position, Vector3.up, diff.eulerAngles.y);
 
 
-        QueryRight = db.Table<TimePoint>()
-            .Where(v => v.PoseID.Equals(PoseID))
-            .Where(v => v.Type.Equals(TimePoint.TYPE_HAND_RIGHT));
 
-        QueryHead = db.Table<TimePoint>()
-            .Where(v => v.PoseID.Equals(PoseID))
-            .Where(v => v.Type.Equals(TimePoint.TYPE_HEAD));
+        }
 
-
-        EQ_Left = QueryLeft.GetEnumerator();
-        EQ_Right = QueryRight.GetEnumerator();
-        EQ_Head = QueryHead.GetEnumerator();
-
-        EQ_Head.MoveNext();
-        InitialRecordedHeadPos = EQ_Head.Current.getV3();
-        EQ_Head.Reset();
-  
     }
 
     void Update()
     {
-
-
-        try
-        {
-
-            delta += Time.deltaTime;
-            if (delta > 0.1)
-            {
-
-
-
-                if (!EQ_Left.MoveNext())
-                {
-                    EQ_Left.Reset();
-                    EQ_Right.Reset();
-                    EQ_Head.Reset();
-                }
-                Vector3 tpLeft = EQ_Left.Current.getV3();
-
-
-                EQ_Right.MoveNext();
-                EQ_Head.MoveNext();
-                Vector3 tpRight = EQ_Right.Current.getV3();
-                Vector3 tpHead = EQ_Head.Current.getV3();
-
-
-                Vector3 HeadPos = InitialHeadPos - (InitialRecordedHeadPos - tpHead);
-                Vector3 RightPos = HeadPos - (tpHead - tpRight);
-                Vector3 LeftPos = HeadPos - (tpHead - tpLeft);
-
-
-                Head.transform.SetPositionAndRotation(HeadPos - eyeOffset, EQ_Head.Current.getQ());
-                Right.transform.SetPositionAndRotation(RightPos, EQ_Right.Current.getQ());
-                Left.transform.SetPositionAndRotation(LeftPos, EQ_Left.Current.getQ());
-
-
-
-                Debug.Log(EQ_Left.Current);
-                
-                delta = 0;
-            }
-
-        }
-        catch
-        {
-
-        }
-
         
-
-
-        //Head.transform.SetPositionAndRotation(
-        //    new Vector3(InitialHeadPos.x, InputTracking.GetLocalPosition(XRNode.Head).y, InitialHeadPos.z),
-        //    InputTracking.GetLocalRotation(XRNode.Head)
-        //);
-
-        //Right.transform.SetPositionAndRotation(
-        //    InputTracking.GetLocalPosition(XRNode.RightHand),
-        //    InputTracking.GetLocalRotation(XRNode.RightHand)
-        //);
-
-        //Left.transform.SetPositionAndRotation(
-        //    InputTracking.GetLocalPosition(XRNode.LeftHand),
-        //    InputTracking.GetLocalRotation(XRNode.LeftHand)
-        //);
-
-        //Head.transform.Translate(0, 0, 2, Space.World);
-        //Right.transform.Translate(0, 0, 2, Space.World);
-        //Left.transform.Translate(0, 0, 2, Space.World);
-
-
-
-        //Vector3 vrHeadPos = InputTracking.GetLocalPosition(XRNode.Head);
-        //Master.transform.position = new Vector3(m.x, 0, m.z);
-
-        //TargetHandLeft.transform.Translate(0, 0, 2, Space.World);
-        //TargetHandRight.transform.Translate(0, 0, 2, Space.World);
-        //Master.transform.Translate(0, 0, 2, Space.World);
-
-
-
     }
 }

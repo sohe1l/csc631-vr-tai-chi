@@ -41,7 +41,7 @@ public class PoseRecorderVC : MonoBehaviour
     int count = 0;
     double x_sum = 0, y_sum = 0, z_sum = 0;
     const string TRIGGER = "joystick button 14";
-
+    int poseId;
 
 
     // Start is called before the first frame update
@@ -51,7 +51,7 @@ public class PoseRecorderVC : MonoBehaviour
         StartCoroutine(Utils.SetVRDevice("OpenVR", true));
 
         StatusLabel.text = "Hold the trigger to start recording";
-        int poseId = Prefs.GetPoseID();
+        poseId = Prefs.GetPoseID();
 
         // Load pose name
         var db = DataService.Instance.GetConnection();
@@ -146,11 +146,6 @@ public class PoseRecorderVC : MonoBehaviour
 
                 StatusLabel.text = "Validation done. " + "Total diff " + total.ToString();
 
-                HeadRecorder.Save();
-                LeftRecorder.Save();
-                RightRecorder.Save();
-
-
                 state = State.Validation_Done;
             }
 
@@ -164,6 +159,7 @@ public class PoseRecorderVC : MonoBehaviour
 
     public void SaveExit()
     {
+        TimePoint.DeletePose(poseId);
         HeadRecorder.Save();
         LeftRecorder.Save();
         RightRecorder.Save();

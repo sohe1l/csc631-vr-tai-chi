@@ -42,4 +42,10 @@ public class TimePoint
     {
         return new Quaternion(QX, QY, QZ, QW);
     }
+
+    public static void DeletePose(int PoseID)
+    {
+        var db = DataService.Instance.GetConnection();
+        db.Execute("DELETE FROM TimePoint WHERE PoseID = ?", PoseID);
+    }
 }
