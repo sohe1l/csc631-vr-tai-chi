@@ -18,13 +18,16 @@ public sealed class PoseLoader
     public Vector3 InitialHeadPos;
     public Quaternion InitialHeadQ;
 
-    public Vector3 LeftV3 { get { return EQ_Left.Current.getV3(); } }
-    public Vector3 RightV3 { get { return EQ_Right.Current.getV3(); } }
-    public Vector3 HeadV3 { get { return EQ_Head.Current.getV3(); } }
+    Vector3 nullV3 = new Vector3(0, 0, 0);
+    Quaternion nullQ = new Quaternion(0,0,0,0);
 
-    public Quaternion LeftQ { get { return EQ_Left.Current.getQ(); } }
-    public Quaternion RightQ { get { return EQ_Right.Current.getQ(); } }
-    public Quaternion HeadQ { get { return EQ_Head.Current.getQ(); } }
+    public Vector3 LeftV3 { get { try { return EQ_Left.Current.getV3(); } catch { return nullV3; } } }
+    public Vector3 RightV3 { get { try { return EQ_Right.Current.getV3(); } catch { return nullV3; } } }
+    public Vector3 HeadV3 { get { try {  return  EQ_Head.Current.getV3(); } catch { return nullV3; } } }
+
+    public Quaternion LeftQ { get { try { return EQ_Left.Current.getQ(); } catch { return nullQ; } } }
+    public Quaternion RightQ { get { try { return EQ_Right.Current.getQ(); } catch { return nullQ; } } }
+    public Quaternion HeadQ { get { try { return EQ_Head.Current.getQ(); } catch { return nullQ; } } }
 
     public bool IsLoaded()
     {
