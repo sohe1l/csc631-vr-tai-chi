@@ -110,17 +110,20 @@ public class Recorder
         return total_diff;
     }
 
+
+
     public void Save()
     {
         var db = DataService.Instance.GetConnection();
 
         //// delete previous rows
-        //var res = db.Table<TimePoint>()
+        //var res = db.Delete<TimePoint>()
         //            .Where(v => v.PoseID.Equals(poseId))
         //            .Where(v => v.Type.Equals(poseType));
-        //foreach(var row in res)
-        //{
 
+        //foreach (var row in res)
+        //{
+            
         //}
 
 

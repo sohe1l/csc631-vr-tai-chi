@@ -1,15 +1,34 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.XR;
 
 public class GameVC : MonoBehaviour
 {
-    public int currentScore;
-    private int Level;
-    public GameObject Player;
+
+    public GameObject MasterHead;
+    public GameObject MasterRight;
+    public GameObject MasterLeft;
+
+    public GameObject PlayerHead;
+    public GameObject PlayerRight;
+    public GameObject PlayerLeft;
+
+    // relative to head
+    public Vector3 MasterLeftV3 { get { return MasterHead.transform.position - MasterLeft.transform.position; } }
+    public Vector3 MasterRightV3 { get { return MasterHead.transform.position - MasterRight.transform.position; } }
+
+    public Vector3 PlayerLeftV3 { get { return PlayerHead.transform.position - PlayerLeft.transform.position; } }
+    public Vector3 PlayerRightV3 { get { return PlayerHead.transform.position - PlayerRight.transform.position; } }
+
     public GameObject Master;
+    private MasterController masterController;
+
+    public int currentScore = 0;
+    private int LevelID;
+    // public GameObject Player;
     public GameObject RedScreen;
     public GameObject YellowScreen;
     public GameObject GreenScreen;
@@ -18,6 +37,13 @@ public class GameVC : MonoBehaviour
 
     public GameObject RightHand;
     public GameObject LeftHand;
+
+    private Level CurrentLevel;
+
+    PoseLoader PL = PoseLoader.Instance;
+    float delta = 0;
+
+    
 
 
     private Pose[] Poses; // poses for the current level
@@ -29,14 +55,20 @@ public class GameVC : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //hardcoded score
-        currentScore = 4569;
+        FindObjectOfType<AudioManager>().stop("Menu");
+        FindObjectOfType<AudioManager>().play("Forest");
+        AddScore(0);
+
+        // get controllers
+        masterController = Master.GetComponent<MasterController>();
+
         // Start VR
         StartCoroutine(Utils.SetVRDevice("OpenVR", true));
 
-        Level = Prefs.GetLevelID();
+        LevelID = Prefs.GetLevelID();
         loadLevel();
 
+        
 
         // Debug.Log(Prefs.GetLevelID());
         // Debug.Log(Prefs.GetPlayerName());
@@ -47,46 +79,97 @@ public class GameVC : MonoBehaviour
 
     void RunCountDown()
     {
-        if(countDown == -1)
+        countDown--;
+
+        if (countDown == 0)
+        {
+            centerMessage.text = "Start";
+            return;
+        }
+        else if (countDown == -1)
         {
             CancelInvoke("RunCountDown");
             centerMessage.text = "";
-            // start the game
-
+            currentPoseIndex = 0;
+            PL.SwitchPose(Poses[currentPoseIndex].Id);
             return;
         }
         centerMessage.text = countDown.ToString();
-        countDown--;
     }
 
     // Update is called once per frame
     void Update()
     {
-        HideAllOverlays();
-        showMoveOffRange();
-        showMoveInRange();
-        showNirvana();
-        updateScore();
+        //HideAllOverlays();
+        //showMoveOffRange();
+        //showMoveInRange();
+        //showNirvana();
+        //updateScore();
 
+        delta += Time.deltaTime;
+        if (delta > 0.1)
+        {
+            if (currentPoseIndex == -1) return;
 
-        //LeftHand.transform.SetPositionAndRotation(
-        //    InputTracking.GetLocalPosition(XRNode.LeftHand),
-        //    InputTracking.GetLocalRotation(XRNode.LeftHand)
-        //);
+            if (!PL.NextFrame()) {
+                PL.SetNotLoaded();
+                currentPoseIndex++;
+                if(currentPoseIndex == Poses.Length)
+                {
+                    EndGame();
+                    return;
+                }
+                PL.SwitchPose(Poses[currentPoseIndex].Id);
+            }
+            masterController.UpdateMaster();
+            delta = 0;
 
-        //RightHand.transform.SetPositionAndRotation(
-        //    InputTracking.GetLocalPosition(XRNode.RightHand),
-        //    InputTracking.GetLocalRotation(XRNode.RightHand)
-        //);
+            if (Vector3.Distance(MasterLeftV3, PlayerLeftV3) < 0.2)
+            {
+                AddScore(1);
+            }
 
+            if (Vector3.Distance(MasterRightV3, PlayerRightV3) < 0.2)
+            {
+                AddScore(1);
+            }
+        }
     }
 
+    void EndGame()
+    {
+        currentPoseIndex = -1;
+        centerMessage.text = "Well Done! Your score: " + currentScore;
+
+        var db = DataService.Instance.GetConnection();
+
+        db.Insert(new Leaderboard()
+        {
+            Player_id = Player.GetOrCreatePlayer(Prefs.GetPlayerName()).Id,
+            Level = LevelID,
+            Score = currentScore
+        });
+
+        Invoke("ExitScene", 10);
+    }
+
+    void ExitScene()
+    {
+        if (CurrentLevel.Mode == Level.MODE_SCORED)
+        {
+            SceneManager.LoadScene("Scored");
+        }
+        else
+        {
+            SceneManager.LoadScene("Training");
+        }
+    }
 
     void loadLevel()
-    {  
+    {
         var db = DataService.Instance.GetConnection();
         var levelQuery = db.Table<Level>()
-            .Where(v => v.Id.Equals(Level));
+            .Where(v => v.Id.Equals(LevelID));
 
         if (levelQuery.Count() != 1)
         {
@@ -95,18 +178,18 @@ public class GameVC : MonoBehaviour
             return;
         }
 
-        Level currentLevel = levelQuery.First();
+        CurrentLevel = levelQuery.First();
         // show level name on screen
         // currentLevel.Name
 
-        Debug.Log("Al poses " + currentLevel.Poses.Split(','));
+        Debug.Log("Al poses " + CurrentLevel.Poses.Split(','));
 
 
-        string[] poses = currentLevel.Poses.Split(',');
-    
+        string[] poses = CurrentLevel.Poses.Split(',');
+
         Poses = new Pose[poses.Length];
 
-        for(int i = 0; i < poses.Length; i++)
+        for (int i = 0; i < poses.Length; i++)
         {
             int poseId = int.Parse(poses[i]);
             var poseQuery = db.Table<Pose>()
@@ -118,9 +201,9 @@ public class GameVC : MonoBehaviour
                 // StatusLabel.text = "Error! Invalid level ID.";
                 return;
             }
-            Poses[i]  = poseQuery.First();
+            Poses[i] = poseQuery.First();
         }
-        countDown = 10;
+        countDown = 3;
     }
 
     void updatePose()
@@ -139,26 +222,26 @@ public class GameVC : MonoBehaviour
 
     void showNirvana()
     {   //shows yellow border if player is in nirvana state 
-        if (Player.transform.position == new Vector3(1, 0, 0))
-        {
-            YellowScreen.SetActive(true);
-        }
+        //if (Player.transform.position == new Vector3(1, 0, 0))
+        //{
+        //    YellowScreen.SetActive(true);
+        //}
     }
 
     void showMoveInRange()
     {   //shows green border if player is in range of move 
-        if (Player.transform.position == new Vector3(0, 0, 1))
-        {
-            GreenScreen.SetActive(true);
-        }
+    //    if (Player.transform.position == new Vector3(0, 0, 1))
+    //    {
+    //        GreenScreen.SetActive(true);
+    //    }
     }
 
     void showMoveOffRange()
     {   //shows red border if player is out of range 
-        if (Player.transform.position == new Vector3(0,0,0))
-        {
-            RedScreen.SetActive(true);
-        }
+        //if (Player.transform.position == new Vector3(0, 0, 0))
+        //{
+        //    RedScreen.SetActive(true);
+        //}
     }
 
     // update chi meter for nirvana during the game
@@ -170,20 +253,14 @@ public class GameVC : MonoBehaviour
 
 
     // update current score in during game play
-    void updateScore()
+    void AddScore(int increment)
     {
-       
+        currentScore += increment;
         score.text = "Score: " + currentScore.ToString();
-
     }
 
     // saves score to database for leaderboard
     void saveScoreToLeaderboard()
-    {
-
-    }
-
-    void endGame()
     {
 
     }
