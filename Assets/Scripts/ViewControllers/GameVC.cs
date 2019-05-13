@@ -43,6 +43,7 @@ public class GameVC : MonoBehaviour
     PoseLoader PL = PoseLoader.Instance;
     float delta = 0;
 
+    
 
 
     private Pose[] Poses; // poses for the current level
@@ -54,6 +55,8 @@ public class GameVC : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        FindObjectOfType<AudioManager>().stop("Menu");
+        FindObjectOfType<AudioManager>().play("Forest");
         AddScore(0);
 
         // get controllers

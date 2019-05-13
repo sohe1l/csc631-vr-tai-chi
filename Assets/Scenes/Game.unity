@@ -3374,6 +3374,7 @@ MonoBehaviour:
   currentScore: 0
   Player: {fileID: 662626344}
   Master: {fileID: 81653838}
+  currentScore: 0
   RedScreen: {fileID: 1996785032}
   YellowScreen: {fileID: 2111405560}
   GreenScreen: {fileID: 1669974135}

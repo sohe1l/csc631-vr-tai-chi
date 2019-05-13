@@ -59,6 +59,7 @@ public class TrainingVC : MonoBehaviour
             }
 
             Button StartBtn = LevelRow.transform.Find("StartBtn").GetComponent<Button>();
+            FindObjectOfType<AudioManager>().play("menu_yes");
             StartBtn.onClick.AddListener(() => LoadLevel(level.Id));
 
             LevelRow.transform.SetParent(ScrollViewContent.transform, false);
