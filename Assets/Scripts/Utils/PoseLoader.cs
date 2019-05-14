@@ -63,8 +63,8 @@ public sealed class PoseLoader
         EQ_Head = QueryHead.GetEnumerator();
 
         EQ_Head.MoveNext();
-        InitialHeadPos = EQ_Head.Current.getV3();
-        InitialHeadQ = EQ_Head.Current.getQ();
+        InitialHeadPos = HeadV3;
+        InitialHeadQ = HeadQ;
         EQ_Head.Reset();
 
         this.PoseID = PoseID;

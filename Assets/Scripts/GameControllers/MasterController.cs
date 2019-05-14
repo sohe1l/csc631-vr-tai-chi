@@ -18,6 +18,9 @@ public class MasterController : MonoBehaviour
     Vector3 InitialHeadPos;
     Quaternion InitialQ;
 
+    Vector3 nullV3 = new Vector3(0, 0, 0);
+
+
     Vector3 eyeOffset = new Vector3(0,0.1f,0);
     PoseLoader PL = PoseLoader.Instance;
 
@@ -33,7 +36,8 @@ public class MasterController : MonoBehaviour
     {
         if (PL.IsLoaded())
         {
-
+            if (PL.HeadV3 == nullV3) return;
+            
             Quaternion diff = Quaternion.Inverse(PL.InitialHeadQ) * InitialQ;
            
             Vector3 HeadPos = InitialHeadPos - (PL.InitialHeadPos - PL.HeadV3) - eyeOffset;
@@ -47,9 +51,6 @@ public class MasterController : MonoBehaviour
 
             Left.transform.RotateAround(Head.transform.position, Vector3.up, diff.eulerAngles.y);
             Right.transform.RotateAround(Head.transform.position, Vector3.up, diff.eulerAngles.y);
-
-
-
         }
 
     }

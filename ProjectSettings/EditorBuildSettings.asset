@@ -29,4 +29,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Setup/PoseRecorderMenu.unity
     guid: 18d3875a9061a4aefb39bbe62ca6db0d
+  - enabled: 1
+    path: Assets/Scenes/BeachScene.unity
+    guid: 5a92a172af42fc84d8368aeb9f082a7f
   m_configObjects: {}

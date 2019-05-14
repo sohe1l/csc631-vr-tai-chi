@@ -72,7 +72,7 @@ public class TrainingVC : MonoBehaviour
     private void LoadLevel(int id)
     {
         Prefs.SetLevelID(id);
-        SceneManager.LoadScene("Game");
+        SceneManager.LoadScene("BeachScene");
     }
 
 

@@ -31,12 +31,11 @@ public class GameVC : MonoBehaviour
     // public GameObject Player;
     public GameObject RedScreen;
     public GameObject YellowScreen;
-    public GameObject GreenScreen;
     public Text score;
-    public TextMesh centerMessage;
 
-    public GameObject RightHand;
-    public GameObject LeftHand;
+    public Text PoseName;
+
+    public TextMesh centerMessage;
 
     private Level CurrentLevel;
 
@@ -127,11 +126,14 @@ public class GameVC : MonoBehaviour
                     return;
                 }
                 PL.SwitchPose(Poses[currentPoseIndex].Id);
+                PoseName.text = "Pose: " + Poses[currentPoseIndex].Name; 
             }
             masterController.UpdateMaster();
             delta = 0;
 
 
+            Debug.Log("L " + Vector3.Distance(MasterLeftV3, PlayerLeftV3));
+            Debug.Log("R " + Vector3.Distance(MasterRightV3, PlayerRightV3));
 
 
             if (Vector3.Distance(MasterLeftV3, PlayerLeftV3) < 0.2)
@@ -157,17 +159,17 @@ public class GameVC : MonoBehaviour
             lastAudioPlayed = 0;
 
             float total = Vector3.Distance(MasterLeftV3, PlayerLeftV3) + Vector3.Distance(MasterRightV3, PlayerRightV3);
-            if (total > 1)
+            if (total > 0.5)
             {
                 showMoveOffRange();
                 FindObjectOfType<AudioManager>().play("fart2");
             }
-            else if (total > 0.6)
+            else if (total > 0.4)
             {
                 showMoveOffRange();
                 FindObjectOfType<AudioManager>().play("fart1");
             }
-            else if (total > 0.4)
+            else if (total > 0.3)
             {
                 showNirvana();
                 FindObjectOfType<AudioManager>().play("invalid");
@@ -264,7 +266,6 @@ public class GameVC : MonoBehaviour
     {
         RedScreen.SetActive(false);
         YellowScreen.SetActive(false);
-        GreenScreen.SetActive(false);
 
     }
 
