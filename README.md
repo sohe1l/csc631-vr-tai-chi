@@ -1,6 +1,8 @@
 # VR-Tai-Chi
 VR Tai Chi training game created in Unity
+```
 Video of gameplay: https://viewsync.net/watch?v=AVCKA-uNj8Y&t=0&v=W9MlAznD7bM&t=11
+```
 
 # Workflow Tips
 ## Branching
