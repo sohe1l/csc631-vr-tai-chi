@@ -43,7 +43,9 @@ public class GameVC : MonoBehaviour
     PoseLoader PL = PoseLoader.Instance;
     float delta = 0;
 
-    
+    float lastAudioPlayed = 0;
+
+
 
 
     private Pose[] Poses; // poses for the current level
@@ -55,8 +57,8 @@ public class GameVC : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        FindObjectOfType<AudioManager>().stop("Menu");
-        FindObjectOfType<AudioManager>().play("Forest");
+        FindObjectOfType<AudioManager>().StopMenu();
+
         AddScore(0);
 
         // get controllers
@@ -68,7 +70,7 @@ public class GameVC : MonoBehaviour
         LevelID = Prefs.GetLevelID();
         loadLevel();
 
-        
+
 
         // Debug.Log(Prefs.GetLevelID());
         // Debug.Log(Prefs.GetPlayerName());
@@ -100,6 +102,9 @@ public class GameVC : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+
+
         //HideAllOverlays();
         //showMoveOffRange();
         //showMoveInRange();
@@ -109,12 +114,14 @@ public class GameVC : MonoBehaviour
         delta += Time.deltaTime;
         if (delta > 0.1)
         {
+            HideAllOverlays();
+
             if (currentPoseIndex == -1) return;
 
             if (!PL.NextFrame()) {
                 PL.SetNotLoaded();
                 currentPoseIndex++;
-                if(currentPoseIndex == Poses.Length)
+                if (currentPoseIndex == Poses.Length)
                 {
                     EndGame();
                     return;
@@ -123,6 +130,9 @@ public class GameVC : MonoBehaviour
             }
             masterController.UpdateMaster();
             delta = 0;
+
+
+
 
             if (Vector3.Distance(MasterLeftV3, PlayerLeftV3) < 0.2)
             {
@@ -133,7 +143,44 @@ public class GameVC : MonoBehaviour
             {
                 AddScore(1);
             }
+
+            PlayMoveAudio();
         }
+    }
+
+    void PlayMoveAudio()
+    {
+        if(lastAudioPlayed > 5)
+        {
+
+            
+            lastAudioPlayed = 0;
+
+            float total = Vector3.Distance(MasterLeftV3, PlayerLeftV3) + Vector3.Distance(MasterRightV3, PlayerRightV3);
+            if (total > 1)
+            {
+                showMoveOffRange();
+                FindObjectOfType<AudioManager>().play("fart2");
+            }
+            else if (total > 0.6)
+            {
+                showMoveOffRange();
+                FindObjectOfType<AudioManager>().play("fart1");
+            }
+            else if (total > 0.4)
+            {
+                showNirvana();
+                FindObjectOfType<AudioManager>().play("invalid");
+            }
+            else
+            {
+                FindObjectOfType<AudioManager>().play("valid");
+            }
+        }
+
+        
+
+        lastAudioPlayed += 0.1f;
     }
 
     void EndGame()
@@ -155,6 +202,8 @@ public class GameVC : MonoBehaviour
 
     void ExitScene()
     {
+        FindObjectOfType<AudioManager>().PlayMenu();
+
         if (CurrentLevel.Mode == Level.MODE_SCORED)
         {
             SceneManager.LoadScene("Scored");
@@ -220,12 +269,10 @@ public class GameVC : MonoBehaviour
     }
 
 
+    //shows yellow border if player is in nirvana state 
     void showNirvana()
-    {   //shows yellow border if player is in nirvana state 
-        //if (Player.transform.position == new Vector3(1, 0, 0))
-        //{
-        //    YellowScreen.SetActive(true);
-        //}
+    {
+        YellowScreen.SetActive(true);
     }
 
     void showMoveInRange()
@@ -236,12 +283,10 @@ public class GameVC : MonoBehaviour
     //    }
     }
 
+    //shows red border if player is out of range 
     void showMoveOffRange()
-    {   //shows red border if player is out of range 
-        //if (Player.transform.position == new Vector3(0, 0, 0))
-        //{
-        //    RedScreen.SetActive(true);
-        //}
+    {
+        RedScreen.SetActive(true);
     }
 
     // update chi meter for nirvana during the game

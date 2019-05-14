@@ -38,8 +38,25 @@ public class AudioManager : MonoBehaviour
 
     void Start()
     {
-        play("Menu");
+        PlayMenu();
     }
+
+    public void PlayMenu()
+    {
+        if (!isPlaying)
+        {
+            play("Menu");
+            isPlaying = true;
+        }
+    }
+
+
+    public void StopMenu()
+    {
+        stop("Menu");
+        isPlaying = false;
+    }
+
 
     // Update is called once per frame
     public void play(string name)
@@ -51,8 +68,6 @@ public class AudioManager : MonoBehaviour
             return;
         }
         s.source.Play();
-        isPlaying = true;
-
     }
     public void stop(string name)
     {
