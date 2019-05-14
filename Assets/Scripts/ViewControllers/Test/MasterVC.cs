@@ -11,18 +11,20 @@ public class MasterVC : MonoBehaviour
     public Transform HandPole;
     public Transform Step;
     public Transform Attraction;
-
+    public Transform Head;
 
 
     public Transform TargetHandLeft;
     public Transform TargetHandRight;
-
+    
 
     int counter = 0;
     TableQuery<TimePoint> QueryLeft;
     IEnumerator<TimePoint> EQ_Left;
     TableQuery<TimePoint> QueryRight;
     IEnumerator<TimePoint> EQ_Right;
+    //TableQuery<TimePoint> QueryHead;
+    //IEnumerator<TimePoint> EQ_Head;
 
     float delta = 0;
 
@@ -54,6 +56,9 @@ public class MasterVC : MonoBehaviour
             .Where(v => v.PoseID.Equals(PoseID))
             .Where(v => v.Type.Equals(TimePoint.TYPE_HAND_RIGHT));
 
+    //    QueryHead = db.Table<TimePoint>()
+    //.Where(v => v.PoseID.Equals(PoseID))
+    //.Where(v => v.Type.Equals(TimePoint.TYPE_HEAD));
         //foreach (TimePoint tp in Query)
         //{
         //    Debug.Log(tp.X);
@@ -61,6 +66,7 @@ public class MasterVC : MonoBehaviour
 
         EQ_Left = QueryLeft.GetEnumerator();
         EQ_Right = QueryRight.GetEnumerator();
+        //EQ_Head = QueryHead.GetEnumerator();
     }
 
     public void LateUpdate()
@@ -118,6 +124,9 @@ public class MasterVC : MonoBehaviour
                 TimePoint tpr = EQ_Right.Current;
                 TargetHandRight.transform.position = new Vector3((float)tpr.X, (float)tpr.Y, (float)tpr.Z);
 
+                //EQ_Head.MoveNext();
+                //TimePoint tprt = EQ_Head.Current;
+                //Head.transform.position = new Vector3((float)tprt.X, (float)tprt.Y, (float)tprt.Z);
 
 
 

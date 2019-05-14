@@ -10,7 +10,7 @@ public class PoseRecorderMenuVC : MonoBehaviour
 
     public GameObject ScrollViewContent;
     public GameObject PoseRowPrefab;
-    private const int LEVEL_ROW_OFFSET = 55;
+    private const int LEVEL_ROW_OFFSET = 35;
 
 
     // Start is called before the first frame update

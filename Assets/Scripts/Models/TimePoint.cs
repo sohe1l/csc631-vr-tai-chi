@@ -21,9 +21,31 @@ public class TimePoint
 
     public int Type { get; set; }
 
-    public double X { get; set; }
-    public double Y { get; set; }
-    public double Z { get; set; }
+    public float X { get; set; }
+    public float Y { get; set; }
+    public float Z { get; set; }
+
+    public float QX { get; set; }
+    public float QY { get; set; }
+    public float QZ { get; set; }
+    public float QW { get; set; }
+
 
     public int Time { get; set; }
+
+    public Vector3 getV3()
+    {
+        return new Vector3(X, Y, Z);
+    }
+
+    public Quaternion getQ()
+    {
+        return new Quaternion(QX, QY, QZ, QW);
+    }
+
+    public static void DeletePose(int PoseID)
+    {
+        var db = DataService.Instance.GetConnection();
+        db.Execute("DELETE FROM TimePoint WHERE PoseID = ?", PoseID);
+    }
 }
